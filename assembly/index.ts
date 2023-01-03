@@ -1,5 +1,5 @@
 import { JSON } from "assemblyscript-json";
-import {Position, parsePrices, getTickFromPrice, trailingStop, renderULMResult, getTickSpacing} from "@steerprotocol/strategy-utils";
+import {Position, parsePrices, getTickFromPrice, renderULMResult, getTickSpacing, Price } from "@steerprotocol/strategy-utils";
 
 
 let width: i32 = 600;
@@ -38,30 +38,65 @@ export function execute(_prices: string): string {
   // If we have no candles, skip action
   if (prices.length == 0) {return `continue`}
   // Get Trailing stop price
-  const trailingLimit = trailingStop(percent, prices)
+  const channelData = donchianChannel(prices, 5)
+
+  const upperChannel = channelData[0];
+  const lowerChannel = channelData[1];
+
+  const upperLimit = upperChannel[upperChannel.length - 1];
+  const lowerLimit = lowerChannel[lowerChannel.length - 1];
+
   // Calculate position
-  const positions = calculateBin(trailingLimit);
+  const positions = calculateBin(upperLimit, lowerLimit);
+  
   // Format and return result
   return renderULMResult(positions);
 }
 
+export function donchianChannel(prices: Price[], periods: i32): Array<Float32Array> {
+  let highestHighs = new Float32Array(prices.length);
+  let lowestLows = new Float32Array(prices.length);
 
-function calculateBin(upper: f32): Position[] {
+  for (let i = 0; i < prices.length; i++) {
+    let high = -Infinity;
+    let low = Infinity;
+    for (let j = i; j > i - periods && j >= 0; j--) {
+      high = Math.max(high, prices[j].close);
+      low = Math.min(low, prices[j].close);
+    }
+    highestHighs[i] = f32(high);
+    lowestLows[i] = f32(low);
+  }
 
-  // Calculate the upper tick based on the start of the stop
+  return [highestHighs, lowestLows];
+}
+
+
+function calculateBin(upper: f32, lower: f32): Position[] {
+
+  // Calculate the upper tick
   const upperTick: i32 = i32(Math.round(getTickFromPrice(upper)));
+
+  // Calculate the lower tick
+  const lowerTick: i32 = i32(Math.round(getTickFromPrice(lower)));
 
   // Get the spacing
   const tickSpacing = getTickSpacing(poolFee);
 
-  // Step down ticks until we reach an initializable tick
-  let _startTick: i32 = upperTick;
-  while (_startTick % tickSpacing !== 0) {
-    _startTick--;
+  // Step up ticks until we reach an initializable tick
+  let _upper: i32 = upperTick;
+  while (_upper % tickSpacing !== 0) {
+    _upper++;
   }
 
+    // Step down ticks until we reach an initializable tick
+    let _lower: i32 = lowerTick;
+    while (_lower % tickSpacing !== 0) {
+      _lower--;
+    }
+
   const positions: Array<Position> = [];
-  const position = new Position(_startTick - width, _startTick, 1);
+  const position = new Position(_lower, _upper, 1);
   positions.push(position);
 
   return positions
