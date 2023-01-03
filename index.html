@@ -1,0 +1,131 @@
+<!doctype html>
+<html class="default no-js">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>@steerprotocol/strategy-template-assemblyscript</title>
+	<meta name="description" content="Documentation for @steerprotocol/strategy-template-assemblyscript">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="assets/css/main.css">
+	<script async src="assets/js/search.js" id="search-script"></script>
+</head>
+<body>
+<header>
+	<div class="tsd-page-toolbar">
+		<div class="container">
+			<div class="table-wrap">
+				<div class="table-cell" id="tsd-search" data-index="assets/js/search.json" data-base=".">
+					<div class="field">
+						<label for="tsd-search-field" class="tsd-widget search no-caption">Search</label>
+						<input id="tsd-search-field" type="text" />
+					</div>
+					<ul class="results">
+						<li class="state loading">Preparing search index...</li>
+						<li class="state failure">The search index is not available</li>
+					</ul>
+					<a href="index.html" class="title">@steerprotocol/strategy-template-assemblyscript</a>
+				</div>
+				<div class="table-cell" id="tsd-widgets">
+					<div id="tsd-filter">
+						<a href="#" class="tsd-widget options no-caption" data-toggle="options">Options</a>
+						<div class="tsd-filter-group">
+							<div class="tsd-select" id="tsd-filter-visibility">
+								<span class="tsd-select-label">All</span>
+								<ul class="tsd-select-list">
+									<li data-value="public">Public</li>
+									<li data-value="protected">Public/Protected</li>
+									<li data-value="private" class="selected">All</li>
+								</ul>
+							</div>
+							<input type="checkbox" id="tsd-filter-inherited" checked />
+							<label class="tsd-widget" for="tsd-filter-inherited">Inherited</label>
+						</div>
+					</div>
+					<a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="tsd-page-title">
+		<div class="container">
+			<h1>@steerprotocol/strategy-template-assemblyscript</h1>
+		</div>
+	</div>
+</header>
+<div class="container container-main">
+	<div class="row">
+		<div class="col-8 col-content">
+			<div class="tsd-panel tsd-typography">
+				<a href="#steer-protocol-strategy-template---assemblyscript" id="steer-protocol-strategy-template---assemblyscript" style="color: inherit; text-decoration: none;">
+					<h1>Steer Protocol Strategy Template - Assemblyscript</h1>
+				</a>
+				<p>AssemblyScript based Strategy Template for the Steer Protocol.</p>
+				<p>Start building on <a href="https://steer.finance">Steer Protocol</a> with our AssemblyScript template. Expand your smart contract capabilities with off-chain compute! More info can be found here: <a href="https://docs.steer.finance/steer-apps/writing-an-app">Documentation</a></p>
+				<a href="#tip" id="tip" style="color: inherit; text-decoration: none;">
+					<h2>Tip!</h2>
+				</a>
+				<p><a href="https://bit.ly/3BsQ3DT">Use our one-click in-browser development environment</a></p>
+				<a href="#project-structure" id="project-structure" style="color: inherit; text-decoration: none;">
+					<h2>Project Structure</h2>
+				</a>
+				<p>Apps have three external functions that are used by the Steer system. Additional methods, classes, or varaibles can be used in conjunction with these required functions for any desired behavior. For more information please see the app interface. This design means, that as a developer, you only need to implement the methods which are required for the app to work.</p>
+				<p>Below are the significant files and folders which you will want to get familiar with:</p>
+				<pre><code><span style="color: #000000">├── </span><span style="color: #001080">assembly</span><span style="color: #000000">      </span><span style="color: #008000">// Source code for the app</span>
+<span style="color: #000000">├── </span><span style="color: #001080">build</span><span style="color: #000000">         </span><span style="color: #008000">// Output of the build process aka `yarn asbuild`</span>
+<span style="color: #000000">├── </span><span style="color: #001080">coverage</span><span style="color: #000000">      </span><span style="color: #008000">// Coverage report for testing</span>
+<span style="color: #000000">├── </span><span style="color: #001080">tests</span><span style="color: #000000">         </span><span style="color: #008000">// Test files with a built in test runner</span>
+<span style="color: #000000">├── </span><span style="color: #001080">asconfig</span><span style="color: #000000">.</span><span style="color: #001080">json</span><span style="color: #000000"> </span><span style="color: #008000">// Assemblyscript config</span>
+<span style="color: #000000">├── </span><span style="color: #001080">index</span><span style="color: #000000">.</span><span style="color: #001080">js</span><span style="color: #000000">      </span><span style="color: #008000">// Javascript entrypoint for the app when running tests</span>
+<span style="color: #000000">├── </span><span style="color: #001080">package</span><span style="color: #000000">.</span><span style="color: #001080">json</span><span style="color: #000000">  </span><span style="color: #008000">// Dependencies for the app</span>
+</code></pre>
+				<a href="#project-setup" id="project-setup" style="color: inherit; text-decoration: none;">
+					<h2>Project Setup</h2>
+				</a>
+				<p>Once the template has been cloned, you will need to install the project dependencies. This can be done via the following command:</p>
+				<p><code>yarn install</code></p>
+				<p>INFO
+				You will notice that there is a post-install script which will compile the ./assembly source folder and populate the ./build folder. This is done to make it easier to run the tests. We will cover this later.</p>
+				<p>Once you have set up your project, you can begin defining your app.</p>
+			</div>
+		</div>
+		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
+			<nav class="tsd-navigation primary">
+				<ul>
+					<li class=" ">
+						<a href="modules.html">Exports</a>
+					</li>
+				</ul>
+			</nav>
+			<nav class="tsd-navigation secondary menu-sticky">
+				<ul class="before-current">
+					<li class=" tsd-kind-function">
+						<a href="modules.html#config" class="tsd-kind-icon">config</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#execute" class="tsd-kind-icon">execute</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#initialize" class="tsd-kind-icon">initialize</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#version" class="tsd-kind-icon">version</a>
+					</li>
+				</ul>
+			</nav>
+		</div>
+	</div>
+</div>
+<footer class="with-border-bottom">
+	<div class="container">
+		<h2>Legend</h2>
+		<div class="tsd-legend-group">
+		</div>
+	</div>
+</footer>
+<div class="container tsd-generator">
+	<p>Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p>
+</div>
+<div class="overlay"></div>
+<script src="assets/js/main.js"></script>
+</body>
+</html>
