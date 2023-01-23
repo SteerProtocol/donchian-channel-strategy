@@ -1,11 +1,20 @@
 const fs = require("fs");
-import * as AsBind from "as-bind/dist/as-bind.cjs.js";
-
+const AsBind = require("as-bind/dist/as-bind.cjs.js");
+import { fetch } from "node-fetch";
 
 const imports = {
-  console: { // File which you are injecting
-    log(strPtr) {
-      console.log(strPtr)
+  env: {
+    fetch: fetch,
+    abort: (msg, file, line, column) => {
+      console.error(
+        'abort called at ' + file + ' line:' + line + ':' + column,
+        'msg: ' + msg,
+      )
+    },
+  },
+  console: {
+    log: message => {
+      console.log(asBindInstance.exports.__getString(message));
     }
   }
 };
