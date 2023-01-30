@@ -1,10 +1,8 @@
 const fs = require("fs");
 const AsBind = require("as-bind/dist/as-bind.cjs.js");
-import { fetch } from "node-fetch";
 
 const imports = {
   env: {
-    fetch: fetch,
     abort: (msg, file, line, column) => {
       console.error(
         'abort called at ' + file + ' line:' + line + ':' + column,

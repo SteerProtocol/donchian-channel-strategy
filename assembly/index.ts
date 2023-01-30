@@ -9,8 +9,6 @@ import {
   console,
 } from "@steerprotocol/strategy-utils";
 import { SlidingWindow } from "./SlidingWindow";
-import { fetch } from '@assemblyscript/std/env';
-
 
 let width: i32 = 600;
 let period: i32 = 0;
@@ -142,8 +140,6 @@ export function expandChannel(upper: f64, lower: f64, multiplier: f64): Array<f6
 }
 
 export function config(): string {
-  const data = fetch('https://jsonplaceholder.typicode.com/todos/1')
-  console.log(data.text())
   return `{
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Strategy Config",
