@@ -23,7 +23,7 @@
     "@semantic-release/git": "^9.0.0",
     "@steerprotocol/base-strategy": "^0.0.2",
     "@steerprotocol/concentrated-liquidity-strategy": "0.0.10",
-    "@steerprotocol/strategy-utils": "^2.0.3",
+    "@steerprotocol/strategy-utils": "^2.0.5",
     "as-bind": "^0.8.0",
     "assemblyscript-json": "^1.1.0",
     "commitizen": "^4.2.4",

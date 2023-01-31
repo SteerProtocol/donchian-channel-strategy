@@ -5,7 +5,6 @@ import {
   renderULMResult,
   getTickSpacing,
   Candle,
-  console,
   parseCandles,
   SlidingWindow
 } from "@steerprotocol/strategy-utils";
