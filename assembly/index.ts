@@ -1,53 +1,48 @@
-import { JSON } from "assemblyscript-json";
+import * as JSON from '@serial-as/json'
 import {
   Position,
-  parsePrices,
   getTickFromPrice,
   renderULMResult,
   getTickSpacing,
-  Price,
+  Candle,
   console,
+  parseCandles,
+  SlidingWindow
 } from "@steerprotocol/strategy-utils";
-import { SlidingWindow } from "./SlidingWindow";
+
 
 let width: i32 = 600;
 let period: i32 = 0;
 let poolFee: i32 = 0;
 let multiplier: f32 = 1;
 
+@serializable
+class Config {
+  binWidth: i64 = 0; 
+  poolFee: i64 = 0;
+  period: i64 = 0;
+  multiplier: f32 = 0;
+}
+
 export function initialize(config: string): void {
   // Parse the config object
-  const configJson = <JSON.Obj>JSON.parse(config);
-  // Get our config variables
-  const _width = configJson.getInteger("binWidth");
-  const _poolFee = configJson.getInteger("poolFee");
-  const _period = configJson.getInteger("period");
-  const _multiplier = configJson.getValue("multiplier");
+  const configJson: Config = JSON.parse<Config>(config);
   
   // Handle null case
-  if (_width == null || _period == null || _poolFee == null || _multiplier == null) {
+  if (configJson.binWidth == 0 || configJson.period == 0 || configJson.poolFee == 0 || configJson.multiplier == 0) {
     throw new Error("Invalid configuration");
   }
   
-  // Handle percents presented as integers
-  if (_multiplier.isFloat) {
-    const f_multiplier = <JSON.Num>_multiplier
-    multiplier = f32(f_multiplier._num);
-  }
-  if (_multiplier.isInteger) {
-    const i_multiplier = <JSON.Integer>_multiplier
-    multiplier = f32(i_multiplier._num);
-  }
-
   // Assign values to memory
-  period = i32(_period._num);
-  width = i32(_width._num);
-  poolFee = i32(_poolFee._num);
+  period = i32(configJson.period);
+  width = i32(configJson.binWidth);
+  poolFee = i32(configJson.poolFee);
+  multiplier = f32(configJson.multiplier);
 }
 
 export function execute(_prices: string): string {
   // _prices will have the results of the dc, which is only candles here
-  const prices = parsePrices(_prices, 0);
+  const prices = parseCandles(_prices);
   // If we have no candles, skip action
   if (prices.length == 0) {
     return `continue`;
@@ -71,11 +66,11 @@ export function execute(_prices: string): string {
   const positions = calculateBin(f32(expandedUpperLimit), f32(expandedLowerLimit));
 
   // Format and return result
-  return renderULMResult(positions);
+  return renderULMResult(positions, 10000);
 }
 
 export function donchianChannel(
-  prices: Price[],
+  prices: Candle[],
   periods: i32
 ): Array<Array<f32>> {
   if (prices.length < periods) {
@@ -90,8 +85,8 @@ export function donchianChannel(
   );
 
   for (let i = 0; i < prices.length; i++) {
-    highestHighs.addValue(prices[i].high);
-    lowestLows.addValue(prices[i].low);
+    highestHighs.addValue(f32(prices[i].high));
+    lowestLows.addValue(f32(prices[i].low));
   }
 
   const response = [highestHighs.getWindow(), lowestLows.getWindow()]
