@@ -1344,30 +1344,6 @@
     lodash "^4.17.4"
     read-pkg-up "^7.0.0"
 
-"@serial-as/core@1.0.2":
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/@serial-as/core/-/core-1.0.2.tgz#a3b21d6962fed7aaae978d63bc0551be65b36ea6"
-  integrity sha512-aJFMzEn5eztHI5ZcxCGYiRXuj8xVQt+JGTzCVHq/NMBHubAi4MC48/e3VVjqGoHo+FdPlnGropx08YPrc3ENCw==
-  dependencies:
-    "@serial-as/transform" "1.0.2"
-    as-bignum "^0.2.17"
-
-"@serial-as/json@1.0.2":
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/@serial-as/json/-/json-1.0.2.tgz#7854a37df7f1805f3b1ad4508d1177faba9d79a5"
-  integrity sha512-ZuMb8bUJmo7aJGoAWp3xHYh/5K/BbYcID+sZlcILHQEWAz/2RaW4dkOquMmtBha+4PaaJ1RzDuTDe3zHuWBsSQ==
-  dependencies:
-    "@serial-as/core" "1.0.2"
-    as-base64 "^0.2.0"
-    assemblyscript-json "^1.1.0"
-
-"@serial-as/transform@1.0.2":
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/@serial-as/transform/-/transform-1.0.2.tgz#95ed7aa2879f13825ea4b404718ee1eca9ad71c7"
-  integrity sha512-1Uti3bxGYrkN1yhV0aVuAQ46dsEvWXUDVQ+2btC5nFo0N2UJ8860K3HVc6y3Xm2pEDMW/6IrmfZoapNV1E3jMw==
-  dependencies:
-    visitor-as "^0.7.0-1"
-
 "@sinonjs/commons@^1.7.0":
   version "1.8.3"
   resolved "https://registry.npmjs.org/@sinonjs/commons/-/commons-1.8.3.tgz"
@@ -1379,6 +1355,21 @@
   resolved "https://registry.npmjs.org/@sinonjs/fake-timers/-/fake-timers-7.1.2.tgz"
   dependencies:
     "@sinonjs/commons" "^1.7.0"
+
+"@steerprotocol/base-strategy@0.1.0", "@steerprotocol/base-strategy@^0.1.0", "@steerprotocol/base-strategy@latest@^0.0.2":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@steerprotocol/base-strategy/-/base-strategy-0.1.0.tgz#b2e3203b53acfd8a24f49f71a646f617a0731c1b"
+  integrity sha512-PY59LjRwXmqfIu7Eku/HiscZIQBkoFi/z48puZJJPHZzNXIXIbRwHu5FcsWCHidN7iXNZPLCKaZfSfgq/jlnMA==
+  dependencies:
+    "@babel/preset-typescript" "^7.14.5"
+    "@semantic-release/changelog" "^5.0.1"
+    "@semantic-release/git" "^9.0.0"
+    as-bignum "^0.2.23"
+    commitizen "^4.2.4"
+    conventional-changelog-conventionalcommits "^4.6.0"
+    json-as "^0.5.20"
+    typescript "^4.3.5"
+    visitor-as "^0.11.4"
 
 "@steerprotocol/base-strategy@^0.0.2":
   version "0.0.2"
@@ -1394,56 +1385,39 @@
     conventional-changelog-conventionalcommits "^4.6.0"
     typescript "^4.3.5"
 
-"@steerprotocol/concentrated-liquidity-strategy@0.0.10":
-  version "0.0.10"
-  resolved "https://registry.npmjs.org/@steerprotocol/concentrated-liquidity-strategy/-/concentrated-liquidity-strategy-0.0.10.tgz"
-  integrity sha512-77G5SqfdfB3nf5RaXghRLNhvrWtVE7z9XwdFYVCwU3pvXHY/YlOZxvvhoBkqHV3SmbMKHMC6gu1wJOQYQwpkzQ==
+"@steerprotocol/concentrated-liquidity-strategy@latest@0.1.2":
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/@steerprotocol/concentrated-liquidity-strategy/-/concentrated-liquidity-strategy-0.2.0.tgz#8f8e9a993a25b864ce4e0b520892217b43c66dd0"
+  integrity sha512-qJsFMIQ/ZSCYOf4CZU3jx+3aY2HmxpW64H/OMA5qmgdQ/QUS4yIxx/e45xNxX1xq1Ch9LwFQqx4kqLnXXamaJQ==
   dependencies:
-    "@assemblyscript/loader" "0.19.9"
     "@babel/preset-typescript" "^7.14.5"
     "@semantic-release/changelog" "^5.0.1"
     "@semantic-release/git" "^9.0.0"
-    "@steerprotocol/base-strategy" "^0.0.2"
-    "@steerprotocol/strategy-utils" "^0.0.1"
-    as-bind "^0.8.0"
-    assemblyscript-json "^1.1.0"
+    "@steerprotocol/base-strategy" "0.1.0"
+    "@steerprotocol/strategy-utils" "2.1.0"
+    as-bignum "^0.2.23"
     commitizen "^4.2.4"
     conventional-changelog-conventionalcommits "^4.6.0"
+    json-as "^0.5.20"
     source-map-support "^0.5.21"
     typescript "^4.3.5"
+    visitor-as "^0.11.4"
 
-"@steerprotocol/strategy-utils@^0.0.1":
-  version "0.0.1"
-  resolved "https://registry.npmjs.org/@steerprotocol/strategy-utils/-/strategy-utils-0.0.1.tgz"
-  integrity sha512-AKXeimjhI6uy/Zfk3i28gYvsF3bannTRCqdIlOQiKGY7wvbHoEzDk++Gjvlo8DwMv54dkupIipc2fxPKXrBMzA==
+"@steerprotocol/strategy-utils@2.1.0", "@steerprotocol/strategy-utils@latest@^2.0.6":
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/@steerprotocol/strategy-utils/-/strategy-utils-2.1.0.tgz#e9b9c40363986b6c66bb3e7e0807b878e01c9833"
+  integrity sha512-LblygBA5GrNtcFGtFD18mAnffPaL0qeGne9ffU3tyAuJT7v5JSzxBqveC3npsAcdgWK/ysDsr9aE39bAMun4hg==
   dependencies:
-    "@assemblyscript/loader" "0.19.9"
     "@babel/preset-typescript" "^7.14.5"
     "@semantic-release/changelog" "^5.0.1"
     "@semantic-release/git" "^9.0.0"
     "@steerprotocol/base-strategy" "^0.0.2"
-    as-bind "^0.8.0"
-    assemblyscript-json "^1.1.0"
+    as-bignum "^0.2.23"
     commitizen "^4.2.4"
     conventional-changelog-conventionalcommits "^4.6.0"
+    json-as "^0.5.20"
     typescript "^4.3.5"
-
-"@steerprotocol/strategy-utils@^2.0.5":
-  version "2.0.5"
-  resolved "https://registry.yarnpkg.com/@steerprotocol/strategy-utils/-/strategy-utils-2.0.5.tgz#5d391bf4fe3813374394bfdc7c77ae0ee5e6a92c"
-  integrity sha512-IouZkyPgsbxPs7FD5Z0Ch+ScaJ07mBF+fPgZXGeO51q2YjRVYr4GpxCfTNzxRjTViFeXjLweUwJ63mQUCLz47w==
-  dependencies:
-    "@assemblyscript/loader" "0.19.9"
-    "@babel/preset-typescript" "^7.14.5"
-    "@semantic-release/changelog" "^5.0.1"
-    "@semantic-release/git" "^9.0.0"
-    "@serial-as/json" "1.0.2"
-    "@steerprotocol/base-strategy" "^0.0.2"
-    as-bind "^0.8.0"
-    assemblyscript-json "^1.1.0"
-    commitizen "^4.2.4"
-    conventional-changelog-conventionalcommits "^4.6.0"
-    typescript "^4.3.5"
+    visitor-as "^0.11.4"
 
 "@tootallnate/once@1":
   version "1.1.2"
@@ -1720,12 +1694,7 @@ arrify@^1.0.1:
   version "1.0.1"
   resolved "https://registry.npmjs.org/arrify/-/arrify-1.0.1.tgz"
 
-as-base64@^0.2.0:
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/as-base64/-/as-base64-0.2.0.tgz#b4bed937c93bfb6524b932b517e1b8571a0dd518"
-  integrity sha512-j6JxprAVN4SXUcZiSChuMBf0JJOCdh5OfrHAepluxmFWuDZZm+YjmfNSk8djUHRPEB+Ui5HGvrz46GLvTJf3ig==
-
-as-bignum@^0.2.17:
+as-bignum@^0.2.23:
   version "0.2.23"
   resolved "https://registry.yarnpkg.com/as-bignum/-/as-bignum-0.2.23.tgz#626e358721504291d35db4ce5c80693630048ad3"
   integrity sha512-0+GiwHNwyw0lXI+6uzOI6ReNOEsqKihdLJuOYJeqEOfXcIqwtSixLcQ7h9UQaMrroktW/Idmqj2TinpcWTxxJA==
@@ -1737,6 +1706,16 @@ as-bind@^0.8.0:
   dependencies:
     visitor-as "^0.5.0"
 
+as-string-sink@^0.5.0:
+  version "0.5.2"
+  resolved "https://registry.yarnpkg.com/as-string-sink/-/as-string-sink-0.5.2.tgz#39da159c01a2064a1dadd872a38c743369dd567f"
+  integrity sha512-HJmhbgJWqfllV7ltZxpMaj/AxSkokb3MzYo1Qd+0HIB9zyzChu1SXBmNc3n0U3XrT6/NIeQvBUegxaXwoUNXAg==
+
+as-variant@^0.4.1:
+  version "0.4.1"
+  resolved "https://registry.yarnpkg.com/as-variant/-/as-variant-0.4.1.tgz#a0c6e0379e53936e9ca888114096b85d9b3d6f6e"
+  integrity sha512-NCeerOfp1JRXRcT4WCqOBANPoDTE2zqS4eN+jPtdyNWJybUgG/rX9ugUxICkSQZzCfnG84zzxr3osQbjAkyiww==
+
 asap@^2.0.0:
   version "2.0.6"
   resolved "https://registry.npmjs.org/asap/-/asap-2.0.6.tgz"
@@ -1747,17 +1726,13 @@ asn1@~0.2.3:
   dependencies:
     safer-buffer "~2.1.0"
 
-assemblyscript-json@^1.1.0:
-  version "1.1.0"
-  resolved "https://registry.npmjs.org/assemblyscript-json/-/assemblyscript-json-1.1.0.tgz"
-
-assemblyscript@0.19.9:
-  version "0.19.9"
-  resolved "https://registry.npmjs.org/assemblyscript/-/assemblyscript-0.19.9.tgz"
-  integrity sha512-nVEg1bbGBegJp+UO9okNHgjCX6sri4OrIkl/LCaNWLIvioN2IjFeYt3R6ppZ6L813VYJxKhf0hr6lhXOXw3dvA==
+assemblyscript@^0.27.0:
+  version "0.27.0"
+  resolved "https://registry.yarnpkg.com/assemblyscript/-/assemblyscript-0.27.0.tgz#d6c3f8c361184eb7eca0e15431b4e43929168e05"
+  integrity sha512-qD/pH71hHwI6dpR4LGMBASUH8E9jlLxIJXpuzC+2h2CzGS6JAq7nD2SHwG6uOVuzClYljo3gOr2JBzWTYpbq/Q==
   dependencies:
-    binaryen "101.0.0-nightly.20210723"
-    long "^4.0.0"
+    binaryen "111.0.0-nightly.20230111"
+    long "^5.2.0"
 
 assert-plus@1.0.0, assert-plus@^1.0.0:
   version "1.0.0"
@@ -2005,10 +1980,10 @@ binary-extensions@^2.2.0:
   version "2.2.0"
   resolved "https://registry.npmjs.org/binary-extensions/-/binary-extensions-2.2.0.tgz"
 
-binaryen@101.0.0-nightly.20210723:
-  version "101.0.0-nightly.20210723"
-  resolved "https://registry.npmjs.org/binaryen/-/binaryen-101.0.0-nightly.20210723.tgz"
-  integrity sha512-eioJNqhHlkguVSbblHOtLqlhtC882SOEPKmNFZaDuz1hzQjolxZ+eu3/kaS10n3sGPONsIZsO7R9fR00UyhEUA==
+binaryen@111.0.0-nightly.20230111:
+  version "111.0.0-nightly.20230111"
+  resolved "https://registry.yarnpkg.com/binaryen/-/binaryen-111.0.0-nightly.20230111.tgz#251226c419ec2fb64037314f476d0e47965c3a84"
+  integrity sha512-CUEED/yMHoGeGnOZhQJW5+Luf5z/F58PHK5lw2feh5fbbqauodgnxyYkc2oxSjYwHHRCmFmaYyeQH4zlhRbebg==
 
 bottleneck@^2.18.1:
   version "2.19.5"
@@ -3972,6 +3947,15 @@ jsesc@~0.5.0:
   version "0.5.0"
   resolved "https://registry.npmjs.org/jsesc/-/jsesc-0.5.0.tgz"
 
+json-as@^0.5.17, json-as@^0.5.20:
+  version "0.5.20"
+  resolved "https://registry.yarnpkg.com/json-as/-/json-as-0.5.20.tgz#95671f490301c035e7e014f27864eb42d1d67016"
+  integrity sha512-MpFAnxWeXaruac/XBecgkg+FjZtVREMKtyGXeS3JAj7kTnowKkMQKVSyIz4FfY81Wy7gf8VmjESIQHFyw2gbNA==
+  dependencies:
+    as-bignum "^0.2.23"
+    as-string-sink "^0.5.0"
+    as-variant "^0.4.1"
+
 json-parse-better-errors@^1.0.1:
   version "1.0.2"
   resolved "https://registry.npmjs.org/json-parse-better-errors/-/json-parse-better-errors-1.0.2.tgz"
@@ -4226,10 +4210,10 @@ lodash@^4.17.12, lodash@^4.17.15, lodash@^4.17.19, lodash@^4.17.20, lodash@^4.17
   version "4.17.21"
   resolved "https://registry.npmjs.org/lodash/-/lodash-4.17.21.tgz"
 
-long@^4.0.0:
-  version "4.0.0"
-  resolved "https://registry.npmjs.org/long/-/long-4.0.0.tgz"
-  integrity sha512-XsP+KhQif4bjX1kbuSiySJFNAehNxgLb6hPRGJ9QsUr8ajHkuXGdrHmFUTUUXhDwVX2R5bY4JNZEwbUiMhV+MA==
+long@^5.2.0:
+  version "5.2.1"
+  resolved "https://registry.yarnpkg.com/long/-/long-5.2.1.tgz#e27595d0083d103d2fa2c20c7699f8e0c92b897f"
+  integrity sha512-GKSNGeNAtw8IryjjkhZxuKB3JzlcLTwjtiQCHKvqQet81I93kXslhDQruGI/QsddO83mcDToBVy7GqGS/zYf/A==
 
 longest@^2.0.1:
   version "2.0.1"
@@ -5880,10 +5864,15 @@ trim-right@^1.0.1:
   version "1.0.1"
   resolved "https://registry.npmjs.org/trim-right/-/trim-right-1.0.1.tgz"
 
-ts-mixer@^5.1.0, ts-mixer@^5.4.1:
+ts-mixer@^5.1.0:
   version "5.4.1"
   resolved "https://registry.npmjs.org/ts-mixer/-/ts-mixer-5.4.1.tgz"
   integrity sha512-Zo9HgPCtNouDgJ+LGtrzVOjSg8+7WGQktIKLwAfaNrlOK1mWGlz1ejsAF/YqUEqAGjUTeB5fEg8gH9Aui6w9xA==
+
+ts-mixer@^6.0.2:
+  version "6.0.2"
+  resolved "https://registry.yarnpkg.com/ts-mixer/-/ts-mixer-6.0.2.tgz#3e4e4bb8daffb24435f6980b15204cb5b287e016"
+  integrity sha512-zvHx3VM83m2WYCE8XL99uaM7mFwYSkjR2OZti98fabHrwkjsCvgwChda5xctein3xGOyaQhtTeDq/1H/GNvF3A==
 
 tslib@^1.9.0:
   version "1.14.1"
@@ -6056,6 +6045,14 @@ verror@1.10.0:
     core-util-is "1.0.2"
     extsprintf "^1.2.0"
 
+visitor-as@^0.11.4:
+  version "0.11.4"
+  resolved "https://registry.yarnpkg.com/visitor-as/-/visitor-as-0.11.4.tgz#7b2d7b7ac8be86d4741796aa0630af5e471a4744"
+  integrity sha512-uih7AooY2V3LhzobjLqyEQzhYYBGeq0y/rZk295foM1Ko498f24NNXBDyM1SgzcLMFCAT/fpmSRco1BpTIdKNQ==
+  dependencies:
+    lodash.clonedeep "^4.5.0"
+    ts-mixer "^6.0.2"
+
 visitor-as@^0.5.0:
   version "0.5.0"
   resolved "https://registry.npmjs.org/visitor-as/-/visitor-as-0.5.0.tgz"
@@ -6063,14 +6060,6 @@ visitor-as@^0.5.0:
   dependencies:
     lodash.clonedeep "^4.5.0"
     ts-mixer "^5.1.0"
-
-visitor-as@^0.7.0-1:
-  version "0.7.0-2"
-  resolved "https://registry.yarnpkg.com/visitor-as/-/visitor-as-0.7.0-2.tgz#28f1c51801a677f14c4487c78a85ad541cfe382d"
-  integrity sha512-JDviqVnGn8i5qafLYuZUGlNeyc/8STIBnmNiXizvHO29xxJDaHNHxbr4Gh+9ksIJvMh9TNQKBeSyT2tldNbpJw==
-  dependencies:
-    lodash.clonedeep "^4.5.0"
-    ts-mixer "^5.4.1"
 
 vscode-textmate@5.2.0:
   version "5.2.0"
