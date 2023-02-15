@@ -1356,7 +1356,7 @@
   dependencies:
     "@sinonjs/commons" "^1.7.0"
 
-"@steerprotocol/base-strategy@0.1.0", "@steerprotocol/base-strategy@^0.1.0", "@steerprotocol/base-strategy@latest@^0.0.2":
+"@steerprotocol/base-strategy@0.1.0", "@steerprotocol/base-strategy@^0.1.0":
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/@steerprotocol/base-strategy/-/base-strategy-0.1.0.tgz#b2e3203b53acfd8a24f49f71a646f617a0731c1b"
   integrity sha512-PY59LjRwXmqfIu7Eku/HiscZIQBkoFi/z48puZJJPHZzNXIXIbRwHu5FcsWCHidN7iXNZPLCKaZfSfgq/jlnMA==
@@ -1385,7 +1385,7 @@
     conventional-changelog-conventionalcommits "^4.6.0"
     typescript "^4.3.5"
 
-"@steerprotocol/concentrated-liquidity-strategy@latest@0.1.2":
+"@steerprotocol/concentrated-liquidity-strategy@0.2.0":
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/@steerprotocol/concentrated-liquidity-strategy/-/concentrated-liquidity-strategy-0.2.0.tgz#8f8e9a993a25b864ce4e0b520892217b43c66dd0"
   integrity sha512-qJsFMIQ/ZSCYOf4CZU3jx+3aY2HmxpW64H/OMA5qmgdQ/QUS4yIxx/e45xNxX1xq1Ch9LwFQqx4kqLnXXamaJQ==
@@ -1403,7 +1403,7 @@
     typescript "^4.3.5"
     visitor-as "^0.11.4"
 
-"@steerprotocol/strategy-utils@2.1.0", "@steerprotocol/strategy-utils@latest@^2.0.6":
+"@steerprotocol/strategy-utils@2.1.0":
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/@steerprotocol/strategy-utils/-/strategy-utils-2.1.0.tgz#e9b9c40363986b6c66bb3e7e0807b878e01c9833"
   integrity sha512-LblygBA5GrNtcFGtFD18mAnffPaL0qeGne9ffU3tyAuJT7v5JSzxBqveC3npsAcdgWK/ysDsr9aE39bAMun4hg==
@@ -1412,6 +1412,22 @@
     "@semantic-release/changelog" "^5.0.1"
     "@semantic-release/git" "^9.0.0"
     "@steerprotocol/base-strategy" "^0.0.2"
+    as-bignum "^0.2.23"
+    commitizen "^4.2.4"
+    conventional-changelog-conventionalcommits "^4.6.0"
+    json-as "^0.5.20"
+    typescript "^4.3.5"
+    visitor-as "^0.11.4"
+
+"@steerprotocol/strategy-utils@^2.1.7":
+  version "2.1.7"
+  resolved "https://registry.yarnpkg.com/@steerprotocol/strategy-utils/-/strategy-utils-2.1.7.tgz#29fe7efe75aed9f925251b3515bd91136f6c04ab"
+  integrity sha512-weOub2Xl6C7R/ddXp62dB9uZRn/H6LDQOZYtdMUlSeDLBENzg4AejfLqGEdTYOVJcezrSHgUYE+zByBWkgbb8w==
+  dependencies:
+    "@babel/preset-typescript" "^7.14.5"
+    "@semantic-release/changelog" "^5.0.1"
+    "@semantic-release/git" "^9.0.0"
+    "@steerprotocol/base-strategy" "0.1.0"
     as-bignum "^0.2.23"
     commitizen "^4.2.4"
     conventional-changelog-conventionalcommits "^4.6.0"
@@ -1710,6 +1726,11 @@ as-string-sink@^0.5.0:
   version "0.5.2"
   resolved "https://registry.yarnpkg.com/as-string-sink/-/as-string-sink-0.5.2.tgz#39da159c01a2064a1dadd872a38c743369dd567f"
   integrity sha512-HJmhbgJWqfllV7ltZxpMaj/AxSkokb3MzYo1Qd+0HIB9zyzChu1SXBmNc3n0U3XrT6/NIeQvBUegxaXwoUNXAg==
+
+as-string-sink@^0.5.3:
+  version "0.5.3"
+  resolved "https://registry.yarnpkg.com/as-string-sink/-/as-string-sink-0.5.3.tgz#462392222e01bb4570ee0df685b7f64630fd4f56"
+  integrity sha512-DN/QqfptDhi4FaBqehMN9wH5Dl/PcTSfCfzSmcdtf3OVYYIEip5iyVUcS6t40BAP/OoUwtxCCbD/dlr2kVG+3Q==
 
 as-variant@^0.4.1:
   version "0.4.1"
@@ -3947,13 +3968,22 @@ jsesc@~0.5.0:
   version "0.5.0"
   resolved "https://registry.npmjs.org/jsesc/-/jsesc-0.5.0.tgz"
 
-json-as@^0.5.17, json-as@^0.5.20:
+json-as@^0.5.20:
   version "0.5.20"
   resolved "https://registry.yarnpkg.com/json-as/-/json-as-0.5.20.tgz#95671f490301c035e7e014f27864eb42d1d67016"
   integrity sha512-MpFAnxWeXaruac/XBecgkg+FjZtVREMKtyGXeS3JAj7kTnowKkMQKVSyIz4FfY81Wy7gf8VmjESIQHFyw2gbNA==
   dependencies:
     as-bignum "^0.2.23"
     as-string-sink "^0.5.0"
+    as-variant "^0.4.1"
+
+json-as@^0.5.21:
+  version "0.5.21"
+  resolved "https://registry.yarnpkg.com/json-as/-/json-as-0.5.21.tgz#ed8fb6372479b8ac2582318a75f64e03041d6925"
+  integrity sha512-qnsU6wGu8+sUKbZcgnEAtkVBvpvcSPwEELXrtYIAUOc1MD/xn4s+z++yoGRr+0rIfswlHGqi7cgriZc8DuY23A==
+  dependencies:
+    as-bignum "^0.2.23"
+    as-string-sink "^0.5.3"
     as-variant "^0.4.1"
 
 json-parse-better-errors@^1.0.1:
