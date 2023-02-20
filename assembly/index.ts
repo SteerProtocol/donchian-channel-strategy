@@ -36,8 +36,9 @@ export function initialize(config: string): void {
   multiplier = f32(configJson.multiplier);
 }
 
-function closestDivisibleNumber(num: number, divisor: number): number {
-  return Math.round(num / divisor) * divisor;
+function closestDivisibleNumber(num: number, divisor: number, floor: boolean): number {
+  if (floor) return Math.floor(num / divisor) * divisor;
+  return Math.ceil(num / divisor) * divisor;
 }
 
 export function execute(_prices: string): string {
@@ -62,9 +63,9 @@ export function execute(_prices: string): string {
   const expandedUpperLimit = expandedLimits[0];
   const expandedLowerLimit = expandedLimits[1];
   
-  const upperTick = closestDivisibleNumber(i32(Math.round(getTickFromPrice(f32(expandedUpperLimit)))), getTickSpacing(poolFee));
-  const lowerTick = closestDivisibleNumber(i32(Math.round(getTickFromPrice(f32(expandedLowerLimit)))), getTickSpacing(poolFee));
-  
+  const upperTick = closestDivisibleNumber(i32(Math.round(getTickFromPrice(f32(expandedUpperLimit)))), getTickSpacing(poolFee), false);
+  const lowerTick = closestDivisibleNumber(i32(Math.round(getTickFromPrice(f32(expandedLowerLimit)))), getTickSpacing(poolFee), true);
+  // console.log(getTickSpacing(poolFee).toString());
   // Calculate position
   const positionGenerator = new PositionGenerator(((i32(upperTick) + i32(lowerTick))/2), 4, 6);
   
