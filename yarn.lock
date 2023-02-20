@@ -1356,6 +1356,13 @@
   dependencies:
     "@sinonjs/commons" "^1.7.0"
 
+"@steerprotocol/app-loader@^0.1.1":
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/@steerprotocol/app-loader/-/app-loader-0.1.1.tgz#2b1ad37d193f3ed904da20e55584f54059745a11"
+  integrity sha512-ROrcxzXbcXs2CLG9sgjH3BCWQIMw0LnJX1eOEVKMq12Y9fkeBzgN8zjW2RUblyaRLDLIUATaWhjHF/yX9h3dQQ==
+  dependencies:
+    pondjs "1.0.0-alpha.10"
+
 "@steerprotocol/base-strategy@0.1.0", "@steerprotocol/base-strategy@^0.1.0":
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/@steerprotocol/base-strategy/-/base-strategy-0.1.0.tgz#b2e3203b53acfd8a24f49f71a646f617a0731c1b"
@@ -3246,6 +3253,11 @@ ignore@^5.1.4:
   version "5.1.8"
   resolved "https://registry.npmjs.org/ignore/-/ignore-5.1.8.tgz"
 
+immutable@^4.0.0-rc.12:
+  version "4.2.4"
+  resolved "https://registry.yarnpkg.com/immutable/-/immutable-4.2.4.tgz#83260d50889526b4b531a5e293709a77f7c55a2a"
+  integrity sha512-WDxL3Hheb1JkRN3sQkyujNlL/xRjAo3rJtaU5xeufUauG66JdMr32bLj4gF+vWl84DIA3Zxw7tiAjneYzRRw+w==
+
 import-fresh@^3.0.0, import-fresh@^3.2.1:
   version "3.3.0"
   resolved "https://registry.npmjs.org/import-fresh/-/import-fresh-3.3.0.tgz"
@@ -4236,7 +4248,7 @@ lodash.uniqby@^4.7.0:
   version "4.7.0"
   resolved "https://registry.npmjs.org/lodash.uniqby/-/lodash.uniqby-4.7.0.tgz"
 
-lodash@^4.17.12, lodash@^4.17.15, lodash@^4.17.19, lodash@^4.17.20, lodash@^4.17.21, lodash@^4.17.4, lodash@^4.7.0:
+lodash@^4.17.11, lodash@^4.17.12, lodash@^4.17.15, lodash@^4.17.19, lodash@^4.17.20, lodash@^4.17.21, lodash@^4.17.4, lodash@^4.7.0:
   version "4.17.21"
   resolved "https://registry.npmjs.org/lodash/-/lodash-4.17.21.tgz"
 
@@ -4482,6 +4494,18 @@ mkdirp@^1.0.3, mkdirp@^1.0.4:
 modify-values@^1.0.0:
   version "1.0.1"
   resolved "https://registry.npmjs.org/modify-values/-/modify-values-1.0.1.tgz"
+
+moment-timezone@^0.5.25:
+  version "0.5.40"
+  resolved "https://registry.yarnpkg.com/moment-timezone/-/moment-timezone-0.5.40.tgz#c148f5149fd91dd3e29bf481abc8830ecba16b89"
+  integrity sha512-tWfmNkRYmBkPJz5mr9GVDn9vRlVZOTe6yqY92rFxiOdWXbjaR0+9LwQnZGGuNR63X456NqmEkbskte8tWL5ePg==
+  dependencies:
+    moment ">= 2.9.0"
+
+"moment@>= 2.9.0", moment@^2.24.0:
+  version "2.29.4"
+  resolved "https://registry.yarnpkg.com/moment/-/moment-2.29.4.tgz#3dbe052889fe7c1b2ed966fcb3a77328964ef108"
+  integrity sha512-5LC9SOxjSc2HF6vO2CyuTDNivEdoz2IvyJJGj6X8DJ0eFyfszE0QiEd+iXmBvUP3WHxSjFH/vIsA0EN00cgr8w==
 
 ms@2.0.0:
   version "2.0.0"
@@ -5013,6 +5037,16 @@ pkg-dir@^4.2.0:
   resolved "https://registry.npmjs.org/pkg-dir/-/pkg-dir-4.2.0.tgz"
   dependencies:
     find-up "^4.0.0"
+
+pondjs@1.0.0-alpha.10:
+  version "1.0.0-alpha.10"
+  resolved "https://registry.yarnpkg.com/pondjs/-/pondjs-1.0.0-alpha.10.tgz#443d80ebd9b5e8bfd32d9efef5285646c19b8672"
+  integrity sha512-ADR2Vf7MAeLXKU2Trq+mL63riqTxoyRaSxrhBN30zAfEEQ7OEFp2KqaAqWJuimsbOiQ1RLHSphjGJDh2x9rC6A==
+  dependencies:
+    immutable "^4.0.0-rc.12"
+    lodash "^4.17.11"
+    moment "^2.24.0"
+    moment-timezone "^0.5.25"
 
 prelude-ls@~1.1.2:
   version "1.1.2"

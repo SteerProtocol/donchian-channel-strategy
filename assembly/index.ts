@@ -68,7 +68,7 @@ export function execute(_prices: string): string {
   // Calculate position
   const positionGenerator = new PositionGenerator(((i32(upperTick) + i32(lowerTick))/2), 4, 6);
   
-  const positions = positionGenerator.generate(i32(upperTick), i32(lowerTick), width, PositionStyle.NORMALIZED)
+  const positions = positionGenerator.generate(i32(upperTick), i32(lowerTick), width, PositionStyle.ABSOLUTE)
 
   // Format and return result
   return renderULMResult(positions, 10000);
