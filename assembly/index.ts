@@ -52,11 +52,8 @@ export function execute(_prices: string): string {
   // Get Trailing stop price
   const channelData = donchianChannel(prices, i32(period));
 
-  const upperChannel = channelData[0];
-  const lowerChannel = channelData[1];
-
-  const upperLimit: f32 = upperChannel[upperChannel.length - 1];
-  const lowerLimit: f32 = lowerChannel[lowerChannel.length - 1];
+  const upperLimit: f32 = channelData[0];
+  const lowerLimit: f32 = channelData[1];
 
   const expandedLimits = expandChannel(upperLimit, lowerLimit, multiplier);
 
@@ -69,7 +66,7 @@ export function execute(_prices: string): string {
   // Calculate position
   const positionGenerator = new PositionGenerator(((i32(upperTick) + i32(lowerTick))/2), 4, 6);
   
-  const positions = positionGenerator.generate(i32(upperTick), i32(lowerTick), width, PositionStyle.NORMALIZED)
+  const positions = positionGenerator.generate(i32(upperTick), i32(lowerTick), width, PositionStyle.ABSOLUTE)
 
   // Format and return result
   return renderULMResult(positions, 10000);
@@ -78,16 +75,16 @@ export function execute(_prices: string): string {
 export function donchianChannel(
   prices: Candle[],
   periods: i32
-): Array<Array<f32>> {
+): Array<f32> {
   if (prices.length < periods) {
-    return [[0], [0]];
+    return [0, 0];
   }
 
   const highestHighs = new SlidingWindow<f32>(period, (window) =>
-    f32(window.reduce((acc, v) => Math.max(acc, v), 0.0))
+    f32(window.reduce((acc, v) => Math.max(acc, v), -Infinity))
   );
   const lowestLows = new SlidingWindow<f32>(period, (window) =>
-    f32(window.reduce((acc, v) => Math.min(acc, v), 0.0))
+    f32(window.reduce((acc, v) => Math.min(acc, v), Infinity))
   );
 
   for (let i = 0; i < prices.length; i++) {
@@ -95,43 +92,9 @@ export function donchianChannel(
     lowestLows.addValue(f32(prices[i].low));
   }
 
-  const response = [highestHighs.getWindow(), lowestLows.getWindow()];
+  const response = [highestHighs.getFormulaResult(), lowestLows.getFormulaResult()];
+  
   return response;
-}
-
-function calculateBin(upper: f32, lower: f32): Position[] {
-  if (upper == 0 || lower == 0) {
-    return [];
-  }
-
-  // Calculate the upper tick
-  const tick = getTickFromPrice(upper);
-  const roundedTick = Math.round(tick);
-  const upperTick: i32 = i32(roundedTick);
-
-  // Calculate the lower tick
-  const lowerTick: i32 = i32(Math.round(getTickFromPrice(lower)));
-
-  // Get the spacing
-  const tickSpacing = getTickSpacing(poolFee);
-
-  // Step up ticks until we reach an initializable tick
-  let _upper: i32 = upperTick;
-  while (_upper % tickSpacing !== 0) {
-    _upper++;
-  }
-
-  // Step down ticks until we reach an initializable tick
-  let _lower: i32 = lowerTick;
-  while (_lower % tickSpacing !== 0) {
-    _lower--;
-  }
-
-  const positions: Array<Position> = [];
-  const position = new Position(_lower, _upper, 1);
-  positions.push(position);
-
-  return positions;
 }
 
 export function expandChannel(
