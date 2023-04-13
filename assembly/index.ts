@@ -8,7 +8,7 @@ class Config {
   binWidth: i32 = 0;
   poolFee: i32 = 0;
   period: i32 = 0;
-  multiplier: f32 = 0;
+  multiplier: f64 = 0;
   liquidityShape: string = "Linear";
   segments: i32 = 0;
   stdDeviation: i32 = 0;
@@ -36,7 +36,7 @@ export function initialize(config: string): void {
   configJson.binSizeMultiplier = i32(configJson.binSizeMultiplier);
   configJson.poolFee = i32(configJson.poolFee);
   configJson.binWidth = getTickSpacing(configJson.poolFee) * configJson.binSizeMultiplier;
-  configJson.multiplier = f32(configJson.multiplier);
+  configJson.multiplier = f64(configJson.multiplier);
 }
 
 function closestDivisibleNumber(num: number, divisor: number, floor: boolean): number {
@@ -55,8 +55,8 @@ export function execute(_prices: string): string {
   // Get Trailing stop price
   const channelData = donchianChannel(prices, i32(configJson.period));
 
-  const upperLimit: f32 = channelData[0];
-  const lowerLimit: f32 = channelData[1];
+  const upperLimit: f64 = channelData[0];
+  const lowerLimit: f64 = channelData[1];
 
   if(upperLimit == 0 || lowerLimit == 0) {
     return renderULMResult([], 0);
@@ -83,29 +83,29 @@ export function execute(_prices: string): string {
 }
 
 function formatTick(expandedUpperLimit: number, expandedLowerLimit: number, poolFee: number): { upperTick: number, lowerTick: number } {
-  const upperTick = closestDivisibleNumber(i32(Math.round(getTickFromPrice(f32(expandedUpperLimit)))), getTickSpacing(poolFee), false);
-  const lowerTick = closestDivisibleNumber(i32(Math.round(getTickFromPrice(f32(expandedLowerLimit)))), getTickSpacing(poolFee), true);
+  const upperTick = closestDivisibleNumber(i32(Math.round(getTickFromPrice(f64(expandedUpperLimit)))), getTickSpacing(poolFee), false);
+  const lowerTick = closestDivisibleNumber(i32(Math.round(getTickFromPrice(f64(expandedLowerLimit)))), getTickSpacing(poolFee), true);
   return { upperTick, lowerTick };
 }
 
 export function donchianChannel(
   prices: Candle[],
   periods: i32
-): Array<f32> {
+): Array<f64> {
   if (prices.length < periods) {
     return [0, 0];
   }
 
-  const highestHighs = new SlidingWindow<f32>(configJson.period, (window) =>
-    f32(window.reduce((acc, v) => Math.max(acc, v), -Infinity))
+  const highestHighs = new SlidingWindow<f64>(configJson.period, (window) =>
+    f64(window.reduce((acc, v) => Math.max(acc, v), -Infinity))
   );
-  const lowestLows = new SlidingWindow<f32>(configJson.period, (window) =>
-    f32(window.reduce((acc, v) => Math.min(acc, v), Infinity))
+  const lowestLows = new SlidingWindow<f64>(configJson.period, (window) =>
+    f64(window.reduce((acc, v) => Math.min(acc, v), Infinity))
   );
 
   for (let i = 0; i < prices.length; i++) {
-    highestHighs.addValue(f32(prices[i].high));
-    lowestLows.addValue(f32(prices[i].low));
+    highestHighs.addValue(f64(prices[i].high));
+    lowestLows.addValue(f64(prices[i].low));
   }
 
   const response = highestHighs.isStable() ? [highestHighs.getFormulaResult(), lowestLows.getFormulaResult()] : [0, 0];
@@ -125,7 +125,8 @@ export function config(): string {
   return `{
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Strategy Config",
-    "type":"object", 
+    "type":"object",
+    "expectedDataTypes": ["OHLC"],
     "properties":{
       "period": {
         "type": "number",

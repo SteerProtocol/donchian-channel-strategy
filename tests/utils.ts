@@ -3,12 +3,13 @@ export const config_payload = `{"period":5,"binWidth":120,"poolFee":3000,"multip
 export const config = `{
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Strategy Config",
-  "type": "object",
-  "properties": {
+  "type":"object",
+  "expectedDataTypes": ["OHLC"],
+  "properties":{
     "period": {
-        "type": "number",
-        "description": "Lookback period for channel",
-        "default": 5
+      "type": "number",
+      "description": "Lookback period for channel",
+      "default": 5
     },
     "multiplier": {
         "type": "number",
@@ -16,17 +17,60 @@ export const config = `{
         "default": 1.0
     },
     "poolFee": {
-      "description": "Pool fee percent for desired Uniswapv3 pool",
+      "description": "Pool fee percent for desired pool",
       "enum" : [10000, 3000, 500, 100],
       "enumNames": ["1%", "0.3%", "0.05%", "0.01%"]
     },
-    "binWidth": {
-        "type": "number",
-        "description": "Width for liquidity position, must be a multiple of pool tick spacing",
-        "default": 600
-    }
-  },
-  "required": ["period", "binWidth", "poolFee", "multiplier"]
+   "liquidityShape":{
+      "enum":[
+         "NormalDistribution",
+         "Linear"
+      ],
+      "type":"string",
+      "default": ""
+   }
+},
+"allOf":[
+   {
+      "if":{
+         "properties":{
+            "liquidityShape":{
+               "const":"Linear"
+            }
+         }
+      },
+      "then":{
+         "properties":{},
+         "required":[]
+      }
+   },
+   {
+      "if":{
+         "properties":{
+            "liquidityShape":{
+               "const":"NormalDistribution"
+            }
+         }
+      },
+      "then":{
+         "properties":{
+            "binSizeMultiplier":{
+              "type":"number",
+              "title":"Bin Size Multiplier"
+            }
+         },
+         "required":[
+            "binSizeMultiplier"
+         ]
+      }
+   },
+   {
+      "required":[
+         "liquidityShape"
+      ]
+   }
+],
+  "required": ["period", "poolFee", "multiplier"]
 }`;
 
 export const empty = '{"data":[]}';
