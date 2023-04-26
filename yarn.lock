@@ -2,11 +2,6 @@
 # yarn lockfile v1
 
 
-"@assemblyscript/loader@0.19.9":
-  version "0.19.9"
-  resolved "https://registry.npmjs.org/@assemblyscript/loader/-/loader-0.19.9.tgz"
-  integrity sha512-AL39UxO+LkYDXtxFTyJP1UVJYIgqVHTbwk9BMPZjoiNxPP/kxDP+LmHxkr1Pm6goR1QbnF69mn5NMuiLTde0mA==
-
 "@babel/code-frame@^7.0.0", "@babel/code-frame@^7.12.13", "@babel/code-frame@^7.14.5":
   version "7.14.5"
   resolved "https://registry.npmjs.org/@babel/code-frame/-/code-frame-7.14.5.tgz"
@@ -1363,6 +1358,13 @@
   dependencies:
     pondjs "1.0.0-alpha.10"
 
+"@steerprotocol/app-loader@^0.1.6":
+  version "0.1.6"
+  resolved "https://registry.yarnpkg.com/@steerprotocol/app-loader/-/app-loader-0.1.6.tgz#4e35c7e2358ce96f565b2ca994ae033ead097049"
+  integrity sha512-517Jar2FZKhLXc8edTrYVWOGSAIEmvHMWVUm0de+ln8KOrYuwhJon0RE/Ad8d4w1bIOtq9UnkpGCeej9i4mCmQ==
+  dependencies:
+    pondjs "1.0.0-alpha.10"
+
 "@steerprotocol/base-strategy@0.1.0", "@steerprotocol/base-strategy@^0.1.0":
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/@steerprotocol/base-strategy/-/base-strategy-0.1.0.tgz#b2e3203b53acfd8a24f49f71a646f617a0731c1b"
@@ -1378,47 +1380,34 @@
     typescript "^4.3.5"
     visitor-as "^0.11.4"
 
-"@steerprotocol/base-strategy@^0.0.2":
-  version "0.0.2"
-  resolved "https://registry.npmjs.org/@steerprotocol/base-strategy/-/base-strategy-0.0.2.tgz"
-  integrity sha512-a/47GcdHC7CYukxOGEnlvIvEPDCrCt0Orwl0hTrAhi22pIaJfHRj/B4eN/iFifB8aJMYhp7DNcWHfaSYm+xiIw==
+"@steerprotocol/concentrated-liquidity-strategy@0.2.8":
+  version "0.2.8"
+  resolved "https://registry.yarnpkg.com/@steerprotocol/concentrated-liquidity-strategy/-/concentrated-liquidity-strategy-0.2.8.tgz#58c90862593c761ed0fbf5b7b313e7bb54209494"
+  integrity sha512-AAWqb1G0T9EHXIFC+plne5xT3Jcf2brLEMUUERI6zomuvQpSrk9QZ0sw0JoxLTLVIBqqi2+LdYQrAGbwGmxpfg==
   dependencies:
-    "@assemblyscript/loader" "0.19.9"
     "@babel/preset-typescript" "^7.14.5"
     "@semantic-release/changelog" "^5.0.1"
     "@semantic-release/git" "^9.0.0"
-    as-bind "^0.8.0"
+    "@steerprotocol/app-loader" "^0.1.6"
+    "@steerprotocol/base-strategy" "0.1.0"
+    "@steerprotocol/strategy-utils" "2.1.8"
+    as-bignum "^0.2.23"
     commitizen "^4.2.4"
     conventional-changelog-conventionalcommits "^4.6.0"
+    json-as "^0.5.36"
+    source-map-support "^0.5.21"
     typescript "^4.3.5"
+    visitor-as "^0.11.4"
 
-"@steerprotocol/concentrated-liquidity-strategy@0.2.1":
-  version "0.2.1"
-  resolved "https://registry.yarnpkg.com/@steerprotocol/concentrated-liquidity-strategy/-/concentrated-liquidity-strategy-0.2.1.tgz#64d57ac357287b472e39ce7ef8d825f816b6915f"
-  integrity sha512-lNFCgenOcjdd3PFzS3cz4Lyn56ugfP2IQznhhuOj0jJNgEjUxZpHfN48CrQ32PXmsG8TbIx1pUHU5ONC3kbp0Q==
+"@steerprotocol/strategy-utils@2.1.8":
+  version "2.1.8"
+  resolved "https://registry.yarnpkg.com/@steerprotocol/strategy-utils/-/strategy-utils-2.1.8.tgz#4f9f1f5839bfc24461fb17b24c9dc9d1ef508085"
+  integrity sha512-YD5HF8YGVQYyLkN3DOs1gEMMFcvwuzIWL6v+WUhpW/TlUoSJMWlOs3KE5wkuiYRBmkPv6YeZsY3i5oZS2ubKNQ==
   dependencies:
     "@babel/preset-typescript" "^7.14.5"
     "@semantic-release/changelog" "^5.0.1"
     "@semantic-release/git" "^9.0.0"
     "@steerprotocol/base-strategy" "0.1.0"
-    "@steerprotocol/strategy-utils" "2.1.0"
-    as-bignum "^0.2.23"
-    commitizen "^4.2.4"
-    conventional-changelog-conventionalcommits "^4.6.0"
-    json-as "^0.5.20"
-    source-map-support "^0.5.21"
-    typescript "^4.3.5"
-    visitor-as "^0.11.4"
-
-"@steerprotocol/strategy-utils@2.1.0":
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/@steerprotocol/strategy-utils/-/strategy-utils-2.1.0.tgz#e9b9c40363986b6c66bb3e7e0807b878e01c9833"
-  integrity sha512-LblygBA5GrNtcFGtFD18mAnffPaL0qeGne9ffU3tyAuJT7v5JSzxBqveC3npsAcdgWK/ysDsr9aE39bAMun4hg==
-  dependencies:
-    "@babel/preset-typescript" "^7.14.5"
-    "@semantic-release/changelog" "^5.0.1"
-    "@semantic-release/git" "^9.0.0"
-    "@steerprotocol/base-strategy" "^0.0.2"
     as-bignum "^0.2.23"
     commitizen "^4.2.4"
     conventional-changelog-conventionalcommits "^4.6.0"
@@ -1426,10 +1415,10 @@
     typescript "^4.3.5"
     visitor-as "^0.11.4"
 
-"@steerprotocol/strategy-utils@^2.1.7":
-  version "2.1.7"
-  resolved "https://registry.yarnpkg.com/@steerprotocol/strategy-utils/-/strategy-utils-2.1.7.tgz#29fe7efe75aed9f925251b3515bd91136f6c04ab"
-  integrity sha512-weOub2Xl6C7R/ddXp62dB9uZRn/H6LDQOZYtdMUlSeDLBENzg4AejfLqGEdTYOVJcezrSHgUYE+zByBWkgbb8w==
+"@steerprotocol/strategy-utils@^2.2.0":
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/@steerprotocol/strategy-utils/-/strategy-utils-2.2.0.tgz#7bd577eb4ab10cb5080ab44c7867825fa87875b5"
+  integrity sha512-spTSmqv/AuPmYOVa15TLjplBDnnHlb4HhF6X2c40u/6Zv58BxN1Z9+m5SWXFGqMhdZnPcLze6B3HSuMm4awCXw==
   dependencies:
     "@babel/preset-typescript" "^7.14.5"
     "@semantic-release/changelog" "^5.0.1"
@@ -1771,13 +1760,6 @@ as-bignum@^0.2.23:
   version "0.2.23"
   resolved "https://registry.yarnpkg.com/as-bignum/-/as-bignum-0.2.23.tgz#626e358721504291d35db4ce5c80693630048ad3"
   integrity sha512-0+GiwHNwyw0lXI+6uzOI6ReNOEsqKihdLJuOYJeqEOfXcIqwtSixLcQ7h9UQaMrroktW/Idmqj2TinpcWTxxJA==
-
-as-bind@^0.8.0:
-  version "0.8.2"
-  resolved "https://registry.npmjs.org/as-bind/-/as-bind-0.8.2.tgz"
-  integrity sha512-Y7WTopfRLODzLLpTgyrf6TMeEbcckF8u7r/eU68PeiKh7yY/YzmjCQiPAJw0F70bge+84nUO5j4No7V4fzdoew==
-  dependencies:
-    visitor-as "^0.5.0"
 
 as-string-sink@^0.5.0:
   version "0.5.2"
@@ -4153,10 +4135,10 @@ json-as@^0.5.20:
     as-string-sink "^0.5.0"
     as-variant "^0.4.1"
 
-json-as@^0.5.21:
-  version "0.5.21"
-  resolved "https://registry.yarnpkg.com/json-as/-/json-as-0.5.21.tgz#ed8fb6372479b8ac2582318a75f64e03041d6925"
-  integrity sha512-qnsU6wGu8+sUKbZcgnEAtkVBvpvcSPwEELXrtYIAUOc1MD/xn4s+z++yoGRr+0rIfswlHGqi7cgriZc8DuY23A==
+json-as@^0.5.36:
+  version "0.5.36"
+  resolved "https://registry.yarnpkg.com/json-as/-/json-as-0.5.36.tgz#ee253b484f1ab3719c1947e740126e0602da5ef5"
+  integrity sha512-/oh/Lp4fWEHtq2K3kMLsTMx0d2ywzZbepgaAHe0Ca9J9bYMEEvbW3PLYo0TgVVkjLhvg24mPbUjGWq/f+PBmZQ==
   dependencies:
     as-bignum "^0.2.23"
     as-string-sink "^0.5.3"
@@ -6225,11 +6207,6 @@ trim-right@^1.0.1:
   version "1.0.1"
   resolved "https://registry.npmjs.org/trim-right/-/trim-right-1.0.1.tgz"
 
-ts-mixer@^5.1.0:
-  version "5.4.1"
-  resolved "https://registry.npmjs.org/ts-mixer/-/ts-mixer-5.4.1.tgz"
-  integrity sha512-Zo9HgPCtNouDgJ+LGtrzVOjSg8+7WGQktIKLwAfaNrlOK1mWGlz1ejsAF/YqUEqAGjUTeB5fEg8gH9Aui6w9xA==
-
 ts-mixer@^6.0.2:
   version "6.0.2"
   resolved "https://registry.yarnpkg.com/ts-mixer/-/ts-mixer-6.0.2.tgz#3e4e4bb8daffb24435f6980b15204cb5b287e016"
@@ -6431,14 +6408,6 @@ visitor-as@^0.11.4:
   dependencies:
     lodash.clonedeep "^4.5.0"
     ts-mixer "^6.0.2"
-
-visitor-as@^0.5.0:
-  version "0.5.0"
-  resolved "https://registry.npmjs.org/visitor-as/-/visitor-as-0.5.0.tgz"
-  integrity sha512-U2P13pa7BAnfj6IEbP4feS1Rci6NT4GlDcwpqkk90u7LGalc5jH9aMuWnxTC8RJJ92iZzDQ8Lea5/OnLDsgzlw==
-  dependencies:
-    lodash.clonedeep "^4.5.0"
-    ts-mixer "^5.1.0"
 
 vscode-textmate@5.2.0:
   version "5.2.0"

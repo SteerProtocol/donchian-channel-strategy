@@ -1,0 +1,1753 @@
+diff --git a/node_modules/@steerprotocol/concentrated-liquidity-strategy/.vscode/settings.json b/node_modules/@steerprotocol/concentrated-liquidity-strategy/.vscode/settings.json
+index 8b123a2..40223cf 100644
+--- a/node_modules/@steerprotocol/concentrated-liquidity-strategy/.vscode/settings.json
++++ b/node_modules/@steerprotocol/concentrated-liquidity-strategy/.vscode/settings.json
+@@ -4,5 +4,8 @@
+         "devops",
+         "Fixed EMA"
+     ],
+-    "jest.jestCommandLine": "yarn test"
++    "jest.jestCommandLine": "yarn test",
++    "cSpell.words": [
++        "segmentize"
++    ]
+ }
+\ No newline at end of file
+diff --git a/node_modules/@steerprotocol/concentrated-liquidity-strategy/CHANGELOG.md b/node_modules/@steerprotocol/concentrated-liquidity-strategy/CHANGELOG.md
+index bb4c17c..23f10d7 100644
+--- a/node_modules/@steerprotocol/concentrated-liquidity-strategy/CHANGELOG.md
++++ b/node_modules/@steerprotocol/concentrated-liquidity-strategy/CHANGELOG.md
+@@ -1,3 +1,10 @@
++## 1.0.0 (2022-05-10)
++
++
++### Features
++
++* :sparkles: add getPositions helper function ([149c3dc](https://github.com/SteerProtocol/concentrated-liquidity-strategy-assemblyscript/commit/149c3dcaf9a7c98b54b65dbccf31db24531b7464))
++
+ ## 1.0.0-alpha.1 (2021-12-09)
+ 
+ 
+diff --git a/node_modules/@steerprotocol/concentrated-liquidity-strategy/asconfig.json b/node_modules/@steerprotocol/concentrated-liquidity-strategy/asconfig.json
+index 1627aaa..8bd44ba 100644
+--- a/node_modules/@steerprotocol/concentrated-liquidity-strategy/asconfig.json
++++ b/node_modules/@steerprotocol/concentrated-liquidity-strategy/asconfig.json
+@@ -1,14 +1,14 @@
+ {
+   "targets": {
+     "debug": {
+-      "binaryFile": "build/untouched.wasm",
+-      "textFile": "build/untouched.wat",
++      "outFile": "build/debug.wasm",
++      "textFile": "build/debug.wat",
+       "sourceMap": true,
+       "debug": true
+     },
+     "release": {
+-      "binaryFile": "build/optimized.wasm",
+-      "textFile": "build/optimized.wat",
++      "outFile": "build/release.wasm",
++      "textFile": "build/release.wat",
+       "sourceMap": true,
+       "optimizeLevel": 3,
+       "shrinkLevel": 0,
+@@ -16,5 +16,8 @@
+       "noAssert": false
+     }
+   },
+-  "options": {}
++  "options": {
++    "bindings": "esm",
++    "transform": ["json-as/transform"]
++  }
+ }
+\ No newline at end of file
+diff --git a/node_modules/@steerprotocol/concentrated-liquidity-strategy/assembly/Bins.ts b/node_modules/@steerprotocol/concentrated-liquidity-strategy/assembly/Bins.ts
+deleted file mode 100644
+index 97aafa0..0000000
+--- a/node_modules/@steerprotocol/concentrated-liquidity-strategy/assembly/Bins.ts
++++ /dev/null
+@@ -1,8 +0,0 @@
+-export type Bins = Array<f32>;
+-
+-export class BinsResult {
+-  constructor(
+-      public startTick : f32,
+-      public bins: Bins
+-  ) {}
+-}
+\ No newline at end of file
+diff --git a/node_modules/@steerprotocol/concentrated-liquidity-strategy/assembly/Curves.ts b/node_modules/@steerprotocol/concentrated-liquidity-strategy/assembly/Curves.ts
+new file mode 100644
+index 0000000..b1cd6fe
+--- /dev/null
++++ b/node_modules/@steerprotocol/concentrated-liquidity-strategy/assembly/Curves.ts
+@@ -0,0 +1,133 @@
++import { JSON } from "json-as/assembly";
++
++import {
++  ExponentialDecayOptions,
++  NormalOptions,
++  SigmoidOptions,
++  LogarithmicOptions,
++  PowerLawOptions,
++  StepOptions,
++  SineOptions,
++  TriangleOptions,
++  QuadraticOptions,
++  CubicOptions,
++  ExponentialGrowthOptions,
++  LogarithmicDecayOptions,
++  SawtoothOptions,
++  SquareWaveOptions,
++  PositionStyle,
++} from "./types";
++import { PositionGenerator } from "./PositionGenerator";
++import { Position } from "@steerprotocol/strategy-utils/assembly";
++
++export class Curves {
++  static exponentialDecay(x: f64, options: ExponentialDecayOptions): f64 {
++    const rate = options.rate || 1;
++    return Math.exp(-rate * x);
++  }
++
++  static normal(x: f64, options: NormalOptions): f64 {
++    const mean = options.mean || 0;
++    const stdDev = options.stdDev || 1;
++    return (
++      (1 / (stdDev * Math.sqrt(2 * Math.PI))) *
++      Math.exp(-0.5 * Math.pow((x - mean) / stdDev, 2))
++    );
++  }
++
++  static sigmoid(x: f64, options: SigmoidOptions): f64 {
++    const k = options.k || 1;
++    return 1 / (1 + Math.exp(-k * x));
++  }
++
++  static logarithmic(x: f64, options: LogarithmicOptions): f64 {
++    const base = options.base || Math.E;
++    if (x < 0) {
++      const absX = Math.abs(x);
++      const argX = Math.atan2(0, x);
++      return (
++        Math.log(absX) / Math.log(base) +
++        (argX / (2 * Math.PI)) * Math.log(base)
++      );
++    } else if (x == 0) {
++      return 0;
++    } else {
++      return Math.log(x) / Math.log(base);
++    }
++  }
++
++  static powerLaw(x: f64, options: PowerLawOptions): f64 {
++    const exponent = options.exponent || 1;
++    return Math.pow(x, exponent);
++  }
++
++  static step(x: f64, options: StepOptions): f64 {
++    const threshold = options.threshold || 0;
++    return x < threshold ? 0 : 1;
++  }
++
++  static sine(x: f64, options: SineOptions): f64 {
++    const amplitude = options.amplitude || 1;
++    const frequency = options.frequency || 1;
++    const phase = options.phase || 0;
++    return amplitude * Math.sin(2 * Math.PI * frequency * x + phase);
++  }
++
++  static triangle(x: f64, options: TriangleOptions): f64 {
++    const amplitude = options.amplitude || 1;
++    const period = options.period || Math.PI * 2;
++    const phase = options.phase || 0;
++    const t = (x - phase) % period;
++    const adjustedT = t + (t < 0 ? period : 0);
++    return (
++      ((2 * amplitude) / period) *
++        (period / 2 - Math.abs(adjustedT - period / 2)) -
++      amplitude
++    );
++  }
++
++  static quadratic(x: f64, options: QuadraticOptions): f64 {
++    const a = options.a || 1;
++    const b = options.b || 0;
++    const c = options.c || 0;
++    return a * Math.pow(x, 2) + b * x + c;
++  }
++
++  static cubic(x: f64, options: CubicOptions): f64 {
++    const a = options.a || 1;
++    const b = options.b || 0;
++    const c = options.c || 0;
++    const d = options.d || 0;
++    return a * Math.pow(x, 3) + b * Math.pow(x, 2) + c * x + d;
++  }
++
++  static exponentialGrowth(x: f64, options: ExponentialGrowthOptions): f64 {
++    const rate = options.rate || 1;
++    return Math.exp(rate * x);
++  }
++
++  static logarithmicDecay(x: f64, options: LogarithmicDecayOptions): f64 {
++    const rate = options.rate || 1;
++    const base = options.base || Math.E;
++    return Math.pow(base, -rate * x);
++  }
++
++  static sawtooth(x: number, options: SawtoothOptions): number {
++    const amplitude = options.amplitude || 1;
++    const period = options.period || Math.PI * 2;
++    const phase = options.phase || 0;
++    const t = (x - phase) % period;
++    const adjustedT = t + (t < 0 ? period : 0);
++    return ((2 * amplitude) / period) * adjustedT - amplitude;
++  }
++
++  static squareWave(x: f64, options: SquareWaveOptions): f64 {
++    const amplitude = options.amplitude || 1;
++    const period = options.period || Math.PI * 2;
++    const phase = options.phase || 0;
++    return Math.sin((2 * Math.PI * (x + phase)) / period) >= 0
++      ? amplitude
++      : -amplitude;
++  }
++}
++
+diff --git a/node_modules/@steerprotocol/concentrated-liquidity-strategy/assembly/PositionGenerator.ts b/node_modules/@steerprotocol/concentrated-liquidity-strategy/assembly/PositionGenerator.ts
+new file mode 100644
+index 0000000..354ef50
+--- /dev/null
++++ b/node_modules/@steerprotocol/concentrated-liquidity-strategy/assembly/PositionGenerator.ts
+@@ -0,0 +1,836 @@
++import { Position } from "@steerprotocol/strategy-utils/assembly";
++import { JSON } from "json-as/assembly";
++import { Curves } from "./Curves";
++import {
++  CubicOptions,
++  CurvesConfigHelper,
++  ExponentialDecayOptions,
++  ExponentialGrowthOptions,
++  LogarithmicDecayOptions,
++  LogarithmicOptions,
++  NormalOptions,
++  PositionStyle,
++  PositionStyleLookup,
++  PowerLawOptions,
++  QuadraticOptions,
++  SawtoothOptions,
++  SigmoidOptions,
++  SineOptions,
++  SquareWaveOptions,
++  StepOptions,
++  TriangleOptions,
++} from "./types";
++
++export class PositionGenerator {
++  constructor() {}
++
++  public generate(
++    upperBound: number,
++    lowerBound: number,
++    segmentWidth: number,
++    style: PositionStyle,
++    options: string
++  ): Array<Position> {
++    const numberOfPoints = 200;
++    const positions: Array<Position> = [];
++    const weights: Array<f64> = [];
++    let minY = Infinity;
++
++    for (
++      let i = Math.ceil(lowerBound / segmentWidth) * segmentWidth;
++      i < upperBound;
++      i += segmentWidth
++    ) {
++      const startx = i;
++      const endx = startx + segmentWidth;
++      let y: f64;
++
++      switch (style) {
++        case PositionStyle.Absolute:
++        case PositionStyle.Linear:
++          y = 10000;
++          break;
++        case PositionStyle.Normalized:
++          y = Curves.normal(startx, JSON.parse<NormalOptions>(options));
++          break;
++        case PositionStyle.Sigmoid:
++          y = Curves.sigmoid(startx, JSON.parse<SigmoidOptions>(options));
++          break;
++        case PositionStyle.ExponentialDecay:
++          y = Curves.exponentialDecay(
++            startx,
++            JSON.parse<ExponentialDecayOptions>(options)
++          );
++          break;
++        case PositionStyle.Logarithmic:
++          y = Curves.logarithmic(
++            startx,
++            JSON.parse<LogarithmicOptions>(options)
++          );
++          break;
++        case PositionStyle.PowerLaw:
++          y = Curves.powerLaw(startx, JSON.parse<PowerLawOptions>(options));
++          break;
++        case PositionStyle.Step:
++          y = Curves.step(startx, JSON.parse<StepOptions>(options));
++          break;
++        case PositionStyle.Sine:
++          y = Curves.sine(startx, JSON.parse<SineOptions>(options));
++          break;
++        case PositionStyle.Triangle:
++          y = Curves.triangle(startx, JSON.parse<TriangleOptions>(options));
++          break;
++        case PositionStyle.Quadratic:
++          y = Curves.quadratic(startx, JSON.parse<QuadraticOptions>(options));
++          break;
++        case PositionStyle.Cubic:
++          y = Curves.cubic(startx, JSON.parse<CubicOptions>(options));
++          break;
++        case PositionStyle.ExponentialGrowth:
++          y = Curves.exponentialGrowth(
++            startx,
++            JSON.parse<ExponentialGrowthOptions>(options)
++          );
++          break;
++        case PositionStyle.LogarithmicDecay:
++          y = Curves.logarithmicDecay(
++            startx,
++            JSON.parse<LogarithmicDecayOptions>(options)
++          );
++          break;
++        case PositionStyle.Sawtooth:
++          y = Curves.sawtooth(startx, JSON.parse<SawtoothOptions>(options));
++          break;
++        case PositionStyle.SquareWave:
++          y = Curves.squareWave(startx, JSON.parse<SquareWaveOptions>(options));
++          break;
++        default:
++          y = 0;
++          break;
++      }
++
++      weights.push(y);
++      const newPosition = new Position(i32(startx), i32(endx), i32(y));
++      positions.push(newPosition);
++    }
++
++    const scalingFactor: f64 = 0.0001;
++    const newMin: f64 = 1; // Set your desired minimum value
++    const newMax: f64 = 10000; // Set your desired maximum value
++    let maxWeight: f64 = -Infinity;
++
++    for (let i = 0; i < weights.length; i++) {
++      const weight = weights[i];
++      minY = Math.min(minY, weight);
++      maxWeight = Math.max(maxWeight, weight);
++    }
++
++    // Normalize positions based on minY, newMin, and newMax
++    for (let i = 0; i < positions.length; i++) {
++      const normalizedWeight = i32(
++        ((weights[i] - minY) * (newMax - newMin)) / (maxWeight - minY) + newMin
++      );
++      positions[i].weight = normalizedWeight;
++    }
++
++    return positions;
++  }
++
++  static applyLiquidityShape(
++    upperTick: number,
++    lowerTick: number,
++    configJson: CurvesConfigHelper,
++    binWidth: i32,
++    liquidityShape: PositionStyle
++  ): Array<Position> {
++    const positionGenerator = new PositionGenerator();
++    let positions = new Array<Position>();
++    switch (liquidityShape) {
++      case PositionStyle.Absolute:
++      case PositionStyle.Linear:
++        positions = positionGenerator.generate(
++          i32(upperTick),
++          i32(lowerTick),
++          binWidth,
++          liquidityShape,
++          ""
++        );
++        break;
++      case PositionStyle.Normalized: {
++        const options = new NormalOptions();
++        options.mean = configJson.mean;
++        options.stdDev = configJson.stdDev;
++        positions = positionGenerator.generate(
++          i32(upperTick),
++          i32(lowerTick),
++          binWidth,
++          liquidityShape,
++          JSON.stringify(options)
++        );
++      }
++      case PositionStyle.Sigmoid: {
++        const options = new SigmoidOptions();
++        options.k = configJson.k;
++        positions = positionGenerator.generate(
++          i32(upperTick),
++          i32(lowerTick),
++          binWidth,
++          liquidityShape,
++          JSON.stringify(options)
++        );
++      }
++      case PositionStyle.ExponentialDecay: {
++        const options = new ExponentialDecayOptions();
++        options.rate = configJson.rate;
++        positions = positionGenerator.generate(
++          i32(upperTick),
++          i32(lowerTick),
++          binWidth,
++          liquidityShape,
++          JSON.stringify(options)
++        );
++        break;
++      }
++      case PositionStyle.Logarithmic: {
++        const options = new LogarithmicOptions();
++        options.base = configJson.base;
++        positions = positionGenerator.generate(
++          i32(upperTick),
++          i32(lowerTick),
++          binWidth,
++          liquidityShape,
++          JSON.stringify(options)
++        );
++        break;
++      }
++      case PositionStyle.PowerLaw: {
++        const options = new PowerLawOptions();
++        options.exponent = configJson.exponent;
++        positions = positionGenerator.generate(
++          i32(upperTick),
++          i32(lowerTick),
++          binWidth,
++          liquidityShape,
++          JSON.stringify(options)
++        );
++        break;
++      }
++      case PositionStyle.Step: {
++        const options = new StepOptions();
++        options.threshold = configJson.threshold;
++        positions = positionGenerator.generate(
++          i32(upperTick),
++          i32(lowerTick),
++          binWidth,
++          liquidityShape,
++          JSON.stringify(options)
++        );
++        break;
++      }
++      case PositionStyle.Sine: {
++        const options = new SineOptions();
++        options.amplitude = configJson.amplitude;
++        options.phase = configJson.phase;
++        options.frequency = configJson.frequency;
++        positions = positionGenerator.generate(
++          i32(upperTick),
++          i32(lowerTick),
++          binWidth,
++          liquidityShape,
++          JSON.stringify(options)
++        );
++        break;
++      }
++      case PositionStyle.Triangle: {
++        const options = new TriangleOptions();
++        options.amplitude = configJson.amplitude;
++        options.phase = configJson.phase;
++        options.period = configJson.period;
++        positions = positionGenerator.generate(
++          i32(upperTick),
++          i32(lowerTick),
++          binWidth,
++          liquidityShape,
++          JSON.stringify(options)
++        );
++        break;
++      }
++      case PositionStyle.Quadratic: {
++        const options = new QuadraticOptions();
++        options.a = configJson.a;
++        options.b = configJson.b;
++        options.c = configJson.c;
++        positions = positionGenerator.generate(
++          i32(upperTick),
++          i32(lowerTick),
++          binWidth,
++          liquidityShape,
++          JSON.stringify(options)
++        );
++        break;
++      }
++      case PositionStyle.Cubic: {
++        const options = new CubicOptions();
++        options.a = configJson.a;
++        options.b = configJson.b;
++        options.c = configJson.c;
++        options.d = configJson.d;
++        positions = positionGenerator.generate(
++          i32(upperTick),
++          i32(lowerTick),
++          binWidth,
++          liquidityShape,
++          JSON.stringify(options)
++        );
++        break;
++      }
++      case PositionStyle.ExponentialGrowth: {
++        const options = new ExponentialGrowthOptions();
++        options.rate = configJson.rate;
++        positions = positionGenerator.generate(
++          i32(upperTick),
++          i32(lowerTick),
++          binWidth,
++          liquidityShape,
++          JSON.stringify(options)
++        );
++        break;
++      }
++      case PositionStyle.LogarithmicDecay: {
++        const options = new LogarithmicDecayOptions();
++        options.base = configJson.base;
++        options.rate = configJson.rate;
++        positions = positionGenerator.generate(
++          i32(upperTick),
++          i32(lowerTick),
++          binWidth,
++          liquidityShape,
++          JSON.stringify(options)
++        );
++        break;
++      }
++      case PositionStyle.Sawtooth: {
++        const options = new SawtoothOptions();
++        options.amplitude = configJson.amplitude;
++        options.phase = configJson.phase;
++        options.period = configJson.period;
++        positions = positionGenerator.generate(
++          i32(upperTick),
++          i32(lowerTick),
++          binWidth,
++          liquidityShape,
++          JSON.stringify(options)
++        );
++        break;
++      }
++      case PositionStyle.SquareWave: {
++        const options = new SquareWaveOptions();
++        options.amplitude = configJson.amplitude;
++        options.period = configJson.period;
++        options.phase = configJson.phase;
++        positions = positionGenerator.generate(
++          i32(upperTick),
++          i32(lowerTick),
++          binWidth,
++          liquidityShape,
++          JSON.stringify(options)
++        );
++        break;
++      }
++    }
++    return positions;
++  }
++
++  static propertyHelper(omit: PositionStyle[] = []): string {
++    const curveList = [
++      PositionStyle.Normalized,
++      PositionStyle.Linear,
++      PositionStyle.ExponentialDecay,
++      PositionStyle.Sigmoid,
++      PositionStyle.Logarithmic,
++      PositionStyle.PowerLaw,
++      PositionStyle.Step,
++      PositionStyle.Sine,
++      PositionStyle.Triangle,
++      PositionStyle.Quadratic,
++      PositionStyle.Cubic,
++      PositionStyle.ExponentialGrowth,
++      PositionStyle.LogarithmicDecay,
++      PositionStyle.Sawtooth,
++      PositionStyle.SquareWave,
++    ];
++
++    const filteredCurves: string[] = [];
++    for(let curve = 0; curve < curveList.length; curve++){
++      if (!omit.includes(curveList[curve])) {
++        filteredCurves.push(PositionStyleLookup(curveList[curve]));
++      }
++    }
++
++    return `"liquidityShape": {
++      "enum": ${JSON.stringify(filteredCurves)},
++      "title": "Liquidity Shape",
++      "type": "string",
++      "default": "Linear"
++    }`;
++  }
++
++  static allOf(): string {
++    return `{
++    "if": {
++      "properties": {
++        "liquidityShape": {
++          "const": "Linear"
++        }
++      }
++    },
++    "then": {
++      "properties": {},
++      "required": []
++    }
++  },
++  {
++    "if": {
++      "properties": {
++        "liquidityShape": {
++          "const": "Normalized"
++        }
++      }
++    },
++    "then": {
++      "properties": {
++        "binSizeMultiplier": {
++          "type": "number",
++          "title": "Position Scale"
++        },
++        "mean": {
++          "type": "number",
++          "title": "Mean"
++        },
++        "stdDev": {
++          "type": "number",
++          "title": "Standard Deviation"
++        }
++      },
++      "required": [
++        "binSizeMultiplier",
++        "mean",
++        "stdDev"
++      ]
++    }
++  },
++  {
++    "if": {
++      "properties": {
++        "liquidityShape": {
++          "const": "ExponentialDecay"
++        }
++      }
++    },
++    "then": {
++      "properties": {
++        "rate": {
++          "type": "number",
++          "title": "Rate"
++        }
++      },
++      "required": [
++        "rate"
++      ]
++    }
++  },
++  {
++    "if": {
++      "properties": {
++        "liquidityShape": {
++          "const": "Sigmoid"
++        }
++      }
++    },
++    "then": {
++      "properties": {
++        "binSizeMultiplier": {
++          "type": "number",
++          "title": "Position Scale"
++        },
++        "k": {
++          "type": "number",
++          "title": "K"
++        }
++      },
++      "required": [
++        "binSizeMultiplier",
++        "k"
++      ]
++    }
++  },
++  {
++    "if": {
++      "properties": {
++        "liquidityShape": {
++          "const": "Logarithmic"
++        }
++      }
++    },
++    "then": {
++      "properties": {
++        "binSizeMultiplier": {
++          "type": "number",
++          "title": "Position Scale"
++        },
++        "base": {
++          "type": "number",
++          "title": "Base"
++        }
++      },
++      "required": [
++        "binSizeMultiplier",
++        "base"
++      ]
++    }
++  },
++  {
++    "if": {
++      "properties": {
++        "liquidityShape": {
++          "const": "PowerLaw"
++        }
++      }
++    },
++    "then": {
++      "properties": {
++        "binSizeMultiplier": {
++          "type": "number",
++          "title": "Position Scale"
++        },
++        "exponent": {
++          "type": "number",
++          "title": "Exponent"
++        }
++      },
++      "required": [
++        "binSizeMultiplier",
++        "exponent"
++      ]
++    }
++  },
++  {
++    "if": {
++      "properties": {
++        "liquidityShape": {
++          "const": "Step"
++        }
++      }
++    },
++    "then": {
++      "properties": {
++        "binSizeMultiplier": {
++          "type": "number",
++          "title": "Position Scale"
++        },
++        "threshold": {
++          "type": "number",
++          "title": "Threshold"
++        }
++      },
++      "required": [
++        "binSizeMultiplier",
++        "threshold"
++      ]
++    }
++  },
++  {
++    "if": {
++      "properties": {
++        "liquidityShape": {
++          "const": "Sine"
++        }
++      }
++    },
++    "then": {
++      "properties": {
++        "binSizeMultiplier": {
++          "type": "number",
++          "title": "Position Scale"
++        },
++        "amplitude": {
++          "type": "number",
++          "title": "Amplitude"
++        },
++        "frequency": {
++          "type": "number",
++          "title": "Frequency"
++        },
++        "phase": {
++          "type": "number",
++          "title": "Phase"
++        }
++      },
++      "required": [
++        "binSizeMultiplier",
++        "amplitude",
++        "frequency",
++        "phase"
++      ]
++    }
++  },
++  {
++    "if": {
++      "properties": {
++        "liquidityShape": {
++          "const": "Triangle"
++        }
++      }
++    },
++    "then": {
++      "properties": {
++        "binSizeMultiplier": {
++          "type": "number",
++          "title": "Position Scale"
++        },
++        "amplitude": {
++          "type": "number",
++          "title": "Amplitude"
++        },
++        "period": {
++          "type": "number",
++          "title": "Period"
++        },
++        "phase": {
++          "type": "number",
++          "title": "Phase"
++        }
++      },
++      "required": [
++        "binSizeMultiplier",
++        "amplitude",
++        "period",
++        "phase"
++      ]
++    }
++  },
++  {
++    "if": {
++      "properties": {
++        "liquidityShape": {
++          "const": "Quadratic"
++        }
++      }
++    },
++    "then": {
++      "properties": {
++        "binSizeMultiplier": {
++          "type": "number",
++          "title": "Position Scale"
++        },
++        "a": {
++          "type": "number",
++          "title": "A"
++        },
++        "b": {
++          "type": "number",
++          "title": "B"
++        },
++        "c": {
++          "type": "number",
++          "title": "C"
++        }
++      },
++      "required": [
++        "binSizeMultiplier",
++        "a",
++        "b",
++        "c"
++      ]
++    }
++  },
++  {
++    "if": {
++      "properties": {
++        "liquidityShape": {
++          "const": "Cubic"
++        }
++      }
++    },
++    "then": {
++      "properties": {
++        "binSizeMultiplier": {
++          "type": "number",
++          "title": "Position Scale"
++        },
++        "a": {
++          "type": "number",
++          "title": "A"
++        },
++        "b": {
++          "type": "number",
++          "title": "B"
++        },
++        "c": {
++          "type": "number",
++          "title": "C"
++        },
++        "d": {
++          "type": "number",
++          "title": "D"
++        }
++      },
++      "required": [
++        "binSizeMultiplier",
++        "a",
++        "b",
++        "c",
++        "d"
++      ]
++    }
++  },
++  {
++    "if": {
++      "properties": {
++        "liquidityShape": {
++          "const": "ExponentialGrowth"
++        }
++      }
++    },
++    "then": {
++      "properties": {
++        "binSizeMultiplier": {
++          "type": "number",
++          "title": "Position Scale"
++        },
++        "rate": {
++          "type": "number",
++          "title": "Rate"
++        }
++      },
++      "required": [
++        "binSizeMultiplier",
++        "rate"
++      ]
++    }
++  },
++  {
++    "if": {
++      "properties": {
++        "liquidityShape": {
++          "const": "LogarithmicDecay"
++        }
++      }
++    },
++    "then": {
++      "properties": {
++        "binSizeMultiplier": {
++          "type": "number",
++          "title": "Position Scale"
++        },
++        "rate": {
++          "type": "number",
++          "title": "Rate"
++        },
++        "base": {
++          "type": "number",
++          "title": "Base"
++        }
++      },
++      "required": [
++        "binSizeMultiplier",
++        "rate",
++        "base"
++      ]
++    }
++  },
++  {
++    "if": {
++      "properties": {
++        "liquidityShape": {
++          "const": "Sawtooth"
++        }
++      }
++    },
++    "then": {
++      "properties": {
++        "binSizeMultiplier": {
++          "type": "number",
++          "title": "Position Scale"
++        },
++        "amplitude": {
++          "type": "number",
++          "title": "Amplitude"
++        },
++        "period": {
++          "type": "number",
++          "title": "Period"
++        },
++        "phase": {
++          "type": "number",
++          "title": "Phase"
++        }
++      },
++      "required": [
++        "binSizeMultiplier",
++        "amplitude",
++        "period",
++        "phase"
++      ]
++    }
++  },
++  {
++    "if": {
++      "properties": {
++        "liquidityShape": {
++          "const": "SquareWave"
++        }
++      }
++    },
++    "then": {
++      "properties": {
++        "binSizeMultiplier": {
++          "type": "number",
++          "title": "Position Scale"
++        },
++        "amplitude": {
++          "type": "number",
++          "title": "Amplitude"
++        },
++        "period": {
++          "type": "number",
++          "title": "Period"
++        },
++        "phase": {
++          "type": "number",
++          "title": "Phase"
++        }
++      },
++      "required": [
++        "binSizeMultiplier",
++        "amplitude",
++        "period",
++        "phase"
++      ]
++    }
++  },
++  {
++    "required": [
++      "liquidityShape"
++    ]
++  }`;
++  }
++}
++
++export function generatePositions(
++  upperBound: number,
++  lowerBound: number,
++  width: number,
++  style: PositionStyle,
++  options: string
++): String {
++  const generator = new PositionGenerator();
++  const positions = generator.generate(
++    i32(upperBound),
++    i32(lowerBound),
++    width,
++    style,
++    options
++  );
++  return JSON.stringify(positions);
++}
+diff --git a/node_modules/@steerprotocol/concentrated-liquidity-strategy/assembly/UniswapV3LiquidityStrategy.ts b/node_modules/@steerprotocol/concentrated-liquidity-strategy/assembly/UniswapV3LiquidityStrategy.ts
+new file mode 100644
+index 0000000..758b3f1
+--- /dev/null
++++ b/node_modules/@steerprotocol/concentrated-liquidity-strategy/assembly/UniswapV3LiquidityStrategy.ts
+@@ -0,0 +1,12 @@
++import { BaseStrategy } from '@steerprotocol/base-strategy/assembly';
++
++export class UniswapV3LiquidityStrategy extends BaseStrategy {
++  private LIQUIDITY_PRECISION: i64 = 2 ** 16 - 2; 
++  private startTick: i32;
++  public binWidth: i32 = 600;
++
++  constructor(binWidth: i32) {
++    super();
++    this.binWidth = binWidth;
++  }
++}
+\ No newline at end of file
+diff --git a/node_modules/@steerprotocol/concentrated-liquidity-strategy/assembly/index.ts b/node_modules/@steerprotocol/concentrated-liquidity-strategy/assembly/index.ts
+index 8c039ab..4fd23b7 100644
+--- a/node_modules/@steerprotocol/concentrated-liquidity-strategy/assembly/index.ts
++++ b/node_modules/@steerprotocol/concentrated-liquidity-strategy/assembly/index.ts
+@@ -1,176 +1,5 @@
+-import { Bins, BinsResult } from "./Bins";
+-import { JSONEncoder } from "assemblyscript-json";
+-import { BaseStrategy } from '@steerprotocol/base-strategy';
+-import { Price } from '@steerprotocol/strategy-utils';
+-import { BandsResult, BinStyle} from './types';
+-
+-export { Bins, BinsResult, BandsResult, BinStyle };
+-
+-export class UniswapV3LiquidityStrategy extends BaseStrategy {
+-  private LIQUIDITY_PRECISION: f32 = 2 ** 16 - 2; 
+-  private startTick: f32;
+-  public binWidth: f32 = 600;
+-  private bins: Bins = [];
+-
+-  constructor(binWidth: f32) {
+-    super();
+-    this.binWidth = binWidth;
+-  }
+-
+-  calculateBins(upper: f32, lower: f32): BinsResult {
+-    const bins: Bins = [];
+-    const upperTick = f32(Math.round(this.getTickFromPrice(upper)));
+-    const lowerTick = f32(Math.round(this.getTickFromPrice(lower)));
+-    const width = this.binWidth;
+-    const range = (upperTick - lowerTick)+width;
+-
+-    let startTick = lowerTick;
+-
+-    while (startTick % width !== 0) {
+-      startTick--;
+-    }
+-
+-    let indexTick = startTick + width;
+-    
+-    bins.push(
+-      f32(
+-        Math.abs(
+-          Math.floor(
+-            
+-            (this.LIQUIDITY_PRECISION * (indexTick - startTick)) / range
+-          )
+-        )
+-      )
+-    );
+-
+-    while (indexTick < upperTick) {
+-      if (upperTick < indexTick + width) {
+-        bins.push(
+-          f32(
+-            Math.abs(
+-              Math.floor(
+-                (this.LIQUIDITY_PRECISION * (upperTick - indexTick)) / range
+-              )
+-            )
+-          )
+-        );
+-        break;
+-      } else {
+-        bins.push(
+-          f32(Math.abs(Math.floor((this.LIQUIDITY_PRECISION * width) / range)))
+-        );
+-        indexTick += width;
+-      }
+-    }
+-
+-    this.startTick = startTick;
+-    this.bins = bins;
+-
+-    return new BinsResult(this.startTick, this.bins);
+-  }
+-
+-  _normalDensity(std: f32, mean: f32, x: f32): f32 {
+-    return f32(
+-      (f32(Math.E) ** (((x - mean) / std) ** 2 / -2) / std) *
+-        Math.sqrt(2 * f32(Math.PI))
+-    );
+-  }
+-
+-  calculateNormalizedBins(prices: Array<Price>, upper: f32, lower: f32): BinsResult {
+-    const bins: Bins = [];
+-    let upperTick = this.getTickFromPrice(upper);
+-    let lowerTick = this.getTickFromPrice(lower);
+-    let cpTick = this.getTickFromPrice(prices[prices.length - 1].close);
+-
+-    // let tickRange = upperTick - lowerTick;
+-    let startTick = lowerTick;
+-    while (i32(startTick) % i32(this.binWidth) != 0) {
+-      startTick -= 1;
+-    }
+-    let indexTick = startTick + this.binWidth;
+-    let std: f32;
+-    //Find the std dev
+-    if (abs(cpTick - lowerTick) > abs(upperTick - cpTick)) {
+-      std = (cpTick - lowerTick) / 3.0;
+-    } else {
+-      std = (upperTick - cpTick) / 3.0;
+-    }
+-    let binPrecision = f32(2 ** 16 - 2);
+-    //add the first bin
+-    bins[0] = f32(
+-      Math.floor(
+-        this._normalDensity(std, cpTick, indexTick - this.binWidth / 2) *
+-          binPrecision
+-      )
+-    );
+-    let iter = 1;
+-
+-    while (indexTick <= upperTick) {
+-      bins[iter] = f32(
+-        Math.floor(
+-          this._normalDensity(std, cpTick, indexTick + this.binWidth / 2) *
+-            binPrecision
+-        )
+-      );
+-      iter++;
+-      indexTick += this.binWidth;
+-    }
+-
+-    return new BinsResult(startTick, bins);
+-  }
+-
+-  // TODO: Needs to be rewritten for all assets
+-  // Price must be in the native token
+-  // token0 for token1
+-  private getTickFromPrice(price: f32): f32 {
+-    const tick = Math.log(price) / Math.log(f32(1.0001));
+-    return f32(tick);
+-  } //Depends on the asset we are working with
+-
+-  convertBins(oldResult: BinsResult): Position[]{
+-    const positions: Array<Position> = [];
+-    let indexTick: f32 = floor(oldResult.startTick);
+-    for (let i = 0; i < oldResult.bins.length; i++) {
+-      const position = new Position(indexTick, indexTick + this.binWidth, oldResult.bins[i]);
+-      positions.push(position);
+-      indexTick += this.binWidth;
+-    }
+-  return positions;
+-  }
+-
+-  renderResult(positions: Array<Position>): string {
+-    // Create encoder
+-    let encoder = new JSONEncoder();
+-
+-    // Construct necessary object
+-    //encoder.pushObject("result");
+-
+-
+-    encoder.pushArray("bins");
+-    for (let i = 0; i < positions.length; i++) {
+-      encoder.pushObject(null);
+-      encoder.setString("lowerBound", positions[i].startTick.toString());
+-      encoder.setString("upperBound", positions[i].endTick.toString());
+-      encoder.setString("weight", positions[i].weight.toString());
+-      encoder.popObject();
+-    }
+-    encoder.popArray();
+-    // Finish object
+-    // encoder.popObject();
+-
+-    return "{" + encoder.toString() + "}";
+-  }
+-
+-  getPositions(upper: f32, lower: f32): Position[] {
+-    const binsResult = this.calculateBins(upper, lower);
+-    return this.convertBins(binsResult);
+-  }
+-}
+-export class Position 
+-{
+-  constructor(
+-    public startTick : f32,
+-    public endTick : f32,
+-    public weight : f32)
+-    {}
+-}
+\ No newline at end of file
++export * from './PositionGenerator';
++export * from './UniswapV3LiquidityStrategy';
++export * from './types';
++export * from './Curves';
++export * from './utils';
+diff --git a/node_modules/@steerprotocol/concentrated-liquidity-strategy/assembly/types/BinTypes.ts b/node_modules/@steerprotocol/concentrated-liquidity-strategy/assembly/types/BinTypes.ts
+deleted file mode 100644
+index d097951..0000000
+--- a/node_modules/@steerprotocol/concentrated-liquidity-strategy/assembly/types/BinTypes.ts
++++ /dev/null
+@@ -1,6 +0,0 @@
+-export type BandsResult = Array<f32>
+-
+-export const enum BinStyle {
+-    ABSOLUTE = 0,
+-    NORMALIZED = 1
+-}
+\ No newline at end of file
+diff --git a/node_modules/@steerprotocol/concentrated-liquidity-strategy/assembly/types/Curves.ts b/node_modules/@steerprotocol/concentrated-liquidity-strategy/assembly/types/Curves.ts
+new file mode 100644
+index 0000000..268d24b
+--- /dev/null
++++ b/node_modules/@steerprotocol/concentrated-liquidity-strategy/assembly/types/Curves.ts
+@@ -0,0 +1,177 @@
++import {JSON} from 'json-as/assembly'
++import { PositionStyle } from './PositionStyle';
++
++@json
++export class ExponentialDecayOptions {
++  rate: f64 = 0;
++}
++
++@json
++export class NormalOptions {
++  mean: f64 = 0;
++  stdDev: f64 = 0;
++}
++
++@json
++export class SigmoidOptions {
++  k: f64 = 0;
++}
++
++@json
++export class LogarithmicOptions {
++  base: f64 = 0;
++}
++
++@json
++export class PowerLawOptions {
++  exponent: f64 = 0;
++}
++
++@json
++export class StepOptions {
++  threshold: f64 = 0;
++}
++
++@json
++export class SineOptions {
++  amplitude: f64 = 0;
++  frequency: f64 = 0;
++  phase: f64 = 0;
++}
++
++@json
++export class TriangleOptions {
++  amplitude: f64 = 0;
++  period: f64 = 0;
++  phase: f64 = 0;
++}
++
++@json
++export class QuadraticOptions {
++  a: f64 = 0;
++  b: f64 = 0;
++  c: f64 = 0;
++}
++
++@json
++export class CubicOptions {
++  a: f64 = 0;
++  b: f64 = 0;
++  c: f64 = 0;
++  d: f64 = 0;
++}
++
++@json
++export class ExponentialGrowthOptions {
++  rate: f64 = 0;
++}
++
++@json
++export class LogarithmicDecayOptions {
++  rate: f64 = 0;
++  base: f64 = 0;
++}
++
++@json
++export class SawtoothOptions {
++  amplitude: f64 = 0;
++  period: f64 = 0;
++  phase: f64 = 0;
++}
++
++@json
++export class SquareWaveOptions {
++  amplitude: f64 = 0;
++  period: f64 = 0;
++  phase: f64 = 0;
++}
++
++@json
++export class CurvesConfigHelper {
++  // ExponentialDecayOptions
++  rate: f64 = 0;
++  // NormalOptions
++  mean: f64 = 0;
++  stdDev: f64 = 0;
++  // SigmoidOptions
++  k: f64 = 0;
++  // LogarithmicOptions
++  base: f64 = 0;
++  // PowerLawOptions
++  exponent: f64 = 0;
++  // StepOptions
++  threshold: f64 = 0;
++  // SineOptions
++  amplitude: f64 = 0;
++  frequency: f64 = 0;
++  phase: f64 = 0;
++  // TriangleOptions
++  period: f64 = 0;
++  // QuadraticOptions
++  a: f64 = 0;
++  b: f64 = 0;
++  c: f64 = 0;
++  // CubicOptions
++  d: f64 = 0;
++  // ExponentialGrowthOptions
++  // rate: f64 = 0; // rate is already included above
++  // LogarithmicDecayOptions
++  // rate: f64 = 0; // rate is already included above
++  // base: f64 = 0; // base is already included above
++  // SawtoothOptions
++  // amplitude: f64 = 0; // amplitude is already included above
++  // period: f64 = 0; // period is already included above
++  // phase: f64 = 0; // phase is already included above
++}
++
++export function stringToPositionStyle(positionStyleString: string): PositionStyle {
++  if (positionStyleString === "Absolute") {
++    return PositionStyle.Absolute;
++  }
++  if (positionStyleString === "Linear") {
++    return PositionStyle.Linear;
++  }
++  if (positionStyleString === "Normalized") {
++    return PositionStyle.Normalized;
++  }
++  if (positionStyleString === "Sigmoid") {
++    return PositionStyle.Sigmoid;
++  }
++  if (positionStyleString === "ExponentialDecay") {
++    return PositionStyle.ExponentialDecay;
++  }
++  if (positionStyleString === "Logarithmic") {
++    return PositionStyle.Logarithmic;
++  }
++  if (positionStyleString === "PowerLaw") {
++    return PositionStyle.PowerLaw;
++  }
++  if (positionStyleString === "Step") {
++    return PositionStyle.Step;
++  }
++  if (positionStyleString === "Sine") {
++    return PositionStyle.Sine;
++  }
++  if (positionStyleString === "Triangle") {
++    return PositionStyle.Triangle;
++  }
++  if (positionStyleString === "Quadratic") {
++    return PositionStyle.Quadratic;
++  }
++  if (positionStyleString === "Cubic") {
++    return PositionStyle.Cubic;
++  }
++  if (positionStyleString === "ExponentialGrowth") {
++    return PositionStyle.ExponentialGrowth;
++  }
++  if (positionStyleString === "LogarithmicDecay") {
++    return PositionStyle.LogarithmicDecay;
++  }
++  if (positionStyleString === "Sawtooth") {
++    return PositionStyle.Sawtooth;
++  }
++  if (positionStyleString === "SquareWave") {
++    return PositionStyle.SquareWave;
++  }
++  throw new Error(`Unknown position style: ${positionStyleString}`);
++}
+diff --git a/node_modules/@steerprotocol/concentrated-liquidity-strategy/assembly/types/PositionStyle.ts b/node_modules/@steerprotocol/concentrated-liquidity-strategy/assembly/types/PositionStyle.ts
+new file mode 100644
+index 0000000..b47d8b9
+--- /dev/null
++++ b/node_modules/@steerprotocol/concentrated-liquidity-strategy/assembly/types/PositionStyle.ts
+@@ -0,0 +1,57 @@
++export const enum PositionStyle {
++    Absolute,
++    Linear,
++    Normalized,
++    Sigmoid,
++    ExponentialDecay,
++    Logarithmic,
++    PowerLaw,
++    Step,
++    Sine,
++    Triangle,
++    Quadratic,
++    Cubic,
++    ExponentialGrowth,
++    LogarithmicDecay,
++    Sawtooth,
++    SquareWave,
++}
++
++export function PositionStyleLookup(positionStyle: PositionStyle): string {
++    switch (positionStyle) {
++      case PositionStyle.Absolute:
++        return "Absolute";
++      case PositionStyle.Linear:
++        return "Linear";
++      case PositionStyle.Normalized:
++        return "Normalized";
++      case PositionStyle.Sigmoid:
++        return "Sigmoid";
++      case PositionStyle.ExponentialDecay:
++        return "ExponentialDecay";
++      case PositionStyle.Logarithmic:
++        return "Logarithmic";
++      case PositionStyle.PowerLaw:
++        return "PowerLaw";
++      case PositionStyle.Step:
++        return "Step";
++      case PositionStyle.Sine:
++        return "Sine";
++      case PositionStyle.Triangle:
++        return "Triangle";
++      case PositionStyle.Quadratic:
++        return "Quadratic";
++      case PositionStyle.Cubic:
++        return "Cubic";
++      case PositionStyle.ExponentialGrowth:
++        return "ExponentialGrowth";
++      case PositionStyle.LogarithmicDecay:
++        return "LogarithmicDecay";
++      case PositionStyle.Sawtooth:
++        return "Sawtooth";
++      case PositionStyle.SquareWave:
++        return "SquareWave";
++      default:
++        throw new Error(`Unknown position style: ${positionStyle}`);
++    }
++  }
+\ No newline at end of file
+diff --git a/node_modules/@steerprotocol/concentrated-liquidity-strategy/assembly/types/index.ts b/node_modules/@steerprotocol/concentrated-liquidity-strategy/assembly/types/index.ts
+index 457443d..f18d1b4 100644
+--- a/node_modules/@steerprotocol/concentrated-liquidity-strategy/assembly/types/index.ts
++++ b/node_modules/@steerprotocol/concentrated-liquidity-strategy/assembly/types/index.ts
+@@ -1 +1,2 @@
+-export * from './BinTypes';
++export * from './Curves';
++export * from './PositionStyle';
+diff --git a/node_modules/@steerprotocol/concentrated-liquidity-strategy/assembly/utils.ts b/node_modules/@steerprotocol/concentrated-liquidity-strategy/assembly/utils.ts
+new file mode 100644
+index 0000000..e7b05fa
+--- /dev/null
++++ b/node_modules/@steerprotocol/concentrated-liquidity-strategy/assembly/utils.ts
+@@ -0,0 +1,71 @@
++import { Position } from "@steerprotocol/strategy-utils/assembly";
++
++export function getTickSpacing(poolFee: i32): i32 {
++  let spacing = 0;
++  switch (poolFee) {
++    case 100:
++      spacing = 1;
++      break;
++    case 500:
++      spacing = 10;
++      break;
++    case 3000:
++      spacing = 60;
++      break;
++    default:
++      spacing = 200;
++  }
++  return spacing;
++}
++
++// Function shaped for making positions with the UniLiquidityManager contract for ease
++export function renderULMResult(
++  positions: Array<Position>,
++  totalLiquidity1e4: number
++): string {
++  // Construct necessary object
++  const lowerTicks: Array<i64> = [];
++  const upperTicks: Array<i64> = [];
++  const weights: Array<i64> = [];
++
++  for (let i = 0; i < positions.length; i++) {
++    lowerTicks.push(positions[i].startTick);
++    upperTicks.push(positions[i].endTick);
++    weights.push(positions[i].weight);
++  }
++
++  return (
++    `{"functionName":"tend(uint256,(int24[],int24[],uint16[]),bytes)",
++    "typesArray":["uint256","tuple(int24[],int24[],uint16[])","bytes"],
++    "valuesArray":[` +
++    totalLiquidity1e4.toString() +
++    `, [[` +
++    lowerTicks.toString() +
++    "],[" +
++    upperTicks.toString() +
++    "],[" +
++    weights.toString() +
++    `]], "0x7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff000000000000000000000000ffffffffffffffffffffffffffffffffffffffff"]
++    }`
++  );
++  // The bytes value here is a placeholder for encoding that gets replaced with time-sensitive data upon execution. It will actually be the swap amount for re-balancing (int256) and slippage limit (uint160)
++}
++
++// TODO: Might need to be rewritten for assets
++// Price must be in the native token
++// token0 for token1
++export function getTickFromPrice(price: f64): i32 {
++  const tick = Math.log(price) / Math.log(f64(1.0001));
++  return i32(tick);
++}
++
++export function formatTick(expandedUpperLimit: number, expandedLowerLimit: number, poolFee: number): Array<number> {
++  const upperTick = closestDivisibleNumber(i32(Math.round(getTickFromPrice(f64(expandedUpperLimit)))), getTickSpacing(i32(poolFee)), false);
++  const lowerTick = closestDivisibleNumber(i32(Math.round(getTickFromPrice(f64(expandedLowerLimit)))), getTickSpacing(i32(poolFee)), true);
++  return [ upperTick, lowerTick ];
++}
++
++function closestDivisibleNumber(num: number, divisor: number, floor: boolean): number {
++  if (floor) return Math.floor(num / divisor) * divisor;
++  return Math.ceil(num / divisor) * divisor;
++}
+\ No newline at end of file
+diff --git a/node_modules/@steerprotocol/concentrated-liquidity-strategy/index.html b/node_modules/@steerprotocol/concentrated-liquidity-strategy/index.html
+new file mode 100644
+index 0000000..d938757
+--- /dev/null
++++ b/node_modules/@steerprotocol/concentrated-liquidity-strategy/index.html
+@@ -0,0 +1,115 @@
++<!DOCTYPE html>
++<html lang="en">
++  <head>
++    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
++    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
++    <script src="json-viewer/jquery.json-viewer.js"></script>
++    <link
++      href="json-viewer/jquery.json-viewer.css"
++      type="text/css"
++      rel="stylesheet"
++    />
++    <script type="module">
++      import { generatePositions, PositionStyle } from "./build/debug.js";
++      async function createChart() {
++        const positionStyle = PositionStyle.Logarithmic;
++        const options = {"base": 0.4}
++        const lowerBound = -100;
++        const upperBound = 100;
++        const segmentWidth = 5;
++
++        const result = generatePositions(
++          upperBound,
++          lowerBound,
++          segmentWidth,
++          positionStyle,
++          JSON.stringify(options)
++        );
++
++        const data = JSON.parse(result).map((position, index) => ({
++          x: position.startTick,
++          y: position.weight,
++          x2: position.endTick,
++        }));
++
++        const ctx = document.getElementById("myChart").getContext("2d");
++        const myChart = new Chart(ctx, {
++          type: "bar",
++          data: {
++            datasets: [
++              {
++                label: "Generated Data",
++                data: data,
++                borderColor: "rgba(75, 192, 192, 1)",
++                backgroundColor: "rgba(75, 192, 192, 0.2)",
++                borderWidth: 1,
++              },
++            ],
++          },
++          options: {
++            indexAxis: "x",
++            scales: {
++              x: {
++                type: "linear",
++                title: {
++                  display: true,
++                  text: "Index",
++                },
++              },
++              y: {
++                type: "linear",
++                title: {
++                  display: true,
++                  text: "Value",
++                },
++              },
++            },
++            elements: {
++              bar: {
++                borderWidth: 1,
++                borderColor: "rgba(75, 192, 192, 1)",
++              },
++            },
++            animation: {
++              duration: 0,
++            },
++            responsiveAnimationDuration: 0,
++          },
++          plugins: [
++            {
++              id: "custom-x2",
++              beforeInit(chart) {
++                chart.data.datasets.forEach((dataset) => {
++                  dataset.barPercentage = 1;
++                });
++              },
++              afterDataLimits(chart) {
++                chart.data.datasets.forEach((dataset) => {
++                  dataset.data.forEach((data) => {
++                    const diff = data.x2 - data.x;
++                    if (diff < chart.scales.x.axisWidth) {
++                      dataset.barPercentage = Math.min(
++                        dataset.barPercentage,
++                        diff / chart.scales.x.axisWidth
++                      );
++                    }
++                  });
++                });
++              },
++            },
++          ],
++        });
++
++        console.table(result);
++
++        document.getElementById("json-renderer").innerHTML = result;
++      }
++
++      createChart();
++    </script>
++  </head>
++  <body>
++    <canvas id="myChart"></canvas>
++    <pre id="json-renderer"></pre>
++  </body>
++</html>
+diff --git a/node_modules/@steerprotocol/concentrated-liquidity-strategy/tests/index.test.ts b/node_modules/@steerprotocol/concentrated-liquidity-strategy/tests/index.test.ts
+index 8fc8568..3519a75 100644
+--- a/node_modules/@steerprotocol/concentrated-liquidity-strategy/tests/index.test.ts
++++ b/node_modules/@steerprotocol/concentrated-liquidity-strategy/tests/index.test.ts
+@@ -1,10 +1,12 @@
+-const myModule = require("../index");
++
++import { generatePositions, PositionStyle } from '../build/debug'
+ 
+ describe("WASM Module", () => {
+   describe("keltnerChannels", () => {
+     it("execute should show not implemented", async () => {
+-      const strategy = myModule.UniswapV3LiquidityStrategy(1);
+-      expect(strategy.binWidth).toBe(1);
++      const strategy = generatePositions(100, 0, 1, PositionStyle.ABSOLUTE);
++      console.log("🧙‍♂️ 🔎 -> ~ file: index.test.ts:8 ~ it ~ strategy:", strategy)
++      expect(strategy).toBe(1);
+     });
+   });
+ });

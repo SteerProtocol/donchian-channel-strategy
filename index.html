@@ -4,7 +4,7 @@
 <script type="module">
 import { initialize, execute } from "./build/release.js";
 
-export const config_payload = `{"period":5,"binWidth":120,"poolFee":3000,"multiplier":1.0}`;
+export const config_payload = `{"period":5,"binWidth":120,"poolFee":3000,"multiplier":1.0,"liquidityShape": "Sigmoid"}`;
 export const config = `{
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Strategy Config",

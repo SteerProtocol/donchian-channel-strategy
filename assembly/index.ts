@@ -1,39 +1,35 @@
-import { getTickFromPrice, getTickSpacing, renderULMResult, PositionGenerator, PositionStyle } from "@steerprotocol/concentrated-liquidity-strategy/assembly";
-import { SlidingWindow, Candle, parseCandles, Position, console } from  "@steerprotocol/strategy-utils/assembly";
+import { CurvesConfigHelper, PositionGenerator, stringToPositionStyle, getTickFromPrice, getTickSpacing, renderULMResult, PositionStyle } from "@steerprotocol/concentrated-liquidity-strategy/assembly";
+import { console, Candle, SlidingWindow, parseCandles, Position } from "@steerprotocol/strategy-utils/assembly";
 import { JSON } from "json-as/assembly";
 
-let width: i32 = 600;
-let period: i32 = 0;
-let poolFee: i32 = 0;
-let multiplier: f32 = 1;
-
-@serializable
-class Config {
-  binWidth: i32 = 0;
-  poolFee: i32 = 0;
-  period: i32 = 0;
-  multiplier: f32 = 0;
+@json
+class Config extends CurvesConfigHelper {
+  lookback: i32 = 0;                                       // Lookback period for the donchian channel
+  multiplier: f32 = 0;                                     // Multiplier for the channel width
+  binSizeMultiplier: f32 = 0;                              // Multiplier for the minimum tick spacing (Creates the position width)
+  poolFee: i32 = 0;                                        // Pool fee
+  liquidityShape: string = 'Absolute';                      // Liquidity style
 }
+
+// 
+let configJson: Config = new Config();
 
 export function initialize(config: string): void {
   // Parse the config object
-  const configJson: Config = JSON.parse<Config>(config);
+  configJson = JSON.parse<Config>(config);
 
-  // Handle null case
+  // Handle null cases
   if (
-    configJson.binWidth == 0 ||
-    configJson.period == 0 ||
     configJson.poolFee == 0 ||
-    configJson.multiplier == 0
+    configJson.multiplier == 0 ||
+    configJson.lookback == 0
   ) {
     throw new Error("Invalid configuration");
   }
 
   // Assign values to memory
-  period = i32(configJson.period);
-  width = i32(configJson.binWidth);
-  poolFee = i32(configJson.poolFee);
-  multiplier = f32(configJson.multiplier);
+  configJson.binSizeMultiplier = f32(configJson.binSizeMultiplier);
+  configJson.poolFee = i32(configJson.poolFee);
 }
 
 function closestDivisibleNumber(num: number, divisor: number, floor: boolean): number {
@@ -46,53 +42,70 @@ export function execute(_prices: string): string {
   const prices = parseCandles(_prices);
   // If we have no candles, skip action
   if (prices.length == 0) {
-    return `continue`;
+    return renderULMResult([], 0);
   }
 
   // Get Trailing stop price
-  const channelData = donchianChannel(prices, i32(period));
+  const channelData = donchianChannel(prices, i32(configJson.lookback));
 
-  const upperLimit: f32 = channelData[0];
-  const lowerLimit: f32 = channelData[1];
+  const upperLimit: f64 = channelData[0];
+  const lowerLimit: f64 = channelData[1];
 
-  const expandedLimits = expandChannel(upperLimit, lowerLimit, multiplier);
+  if(upperLimit == 0 || lowerLimit == 0) {
+    return renderULMResult([], 0);
+  }
+
+  const expandedLimits = expandChannel(upperLimit, lowerLimit, configJson.multiplier);
 
   const expandedUpperLimit = expandedLimits[0];
   const expandedLowerLimit = expandedLimits[1];
   
-  const upperTick = closestDivisibleNumber(i32(Math.round(getTickFromPrice(f32(expandedUpperLimit)))), getTickSpacing(poolFee), false);
-  const lowerTick = closestDivisibleNumber(i32(Math.round(getTickFromPrice(f32(expandedLowerLimit)))), getTickSpacing(poolFee), true);
-  // console.log(getTickSpacing(poolFee).toString());
-  // Calculate position
-  const positionGenerator = new PositionGenerator(((i32(upperTick) + i32(lowerTick))/2), 4, 6);
+  const formattedTicks = formatTick(expandedUpperLimit, expandedLowerLimit, configJson.poolFee);
   
-  const positions = positionGenerator.generate(i32(upperTick), i32(lowerTick), width, PositionStyle.ABSOLUTE)
+  const upperTick = formattedTicks[0];
+  const lowerTick = formattedTicks[1];
+  // Calculate positions
+  const binWidth = i32(f32(getTickSpacing(configJson.poolFee)) * configJson.binSizeMultiplier);
+  // console.log('configJson.liquidityStyle: ' + configJson.liquidityShape)
+  const positionStyle = stringToPositionStyle(configJson.liquidityShape);
 
+  console.log('positionStyle: ' + positionStyle.toString())
+  console.log('positionStyle: ' + (u32(positionStyle) === u32(PositionStyle.Linear)).toString())
+  
+  const positions = PositionGenerator.applyLiquidityShape(upperTick, lowerTick, configJson, binWidth, positionStyle);
+  // const positions: Array<Position> = [new Position(i32(upperTick), i32(lowerTick), 10000)]
   // Format and return result
   return renderULMResult(positions, 10000);
+}
+
+function formatTick(expandedUpperLimit: number, expandedLowerLimit: number, poolFee: number): Array<number> {
+  const upperTick = closestDivisibleNumber(i32(Math.round(getTickFromPrice(f32(expandedUpperLimit)))), getTickSpacing(i32(poolFee)), false);
+  const lowerTick = closestDivisibleNumber(i32(Math.round(getTickFromPrice(f32(expandedLowerLimit)))), getTickSpacing(i32(poolFee)), true);
+  return [ upperTick, lowerTick ];
 }
 
 export function donchianChannel(
   prices: Candle[],
   periods: i32
-): Array<f32> {
+): Array<f64> {
+
   if (prices.length < periods) {
     return [0, 0];
   }
 
-  const highestHighs = new SlidingWindow<f32>(period, (window) =>
-    f32(window.reduce((acc, v) => Math.max(acc, v), -Infinity))
+  const highestHighs = new SlidingWindow<f64>(configJson.lookback, (window) =>
+    f64(window.reduce((acc, v) => Math.max(acc, v), -Infinity))
   );
-  const lowestLows = new SlidingWindow<f32>(period, (window) =>
-    f32(window.reduce((acc, v) => Math.min(acc, v), Infinity))
+  const lowestLows = new SlidingWindow<f64>(configJson.lookback, (window) =>
+    f64(window.reduce((acc, v) => Math.min(acc, v), Infinity))
   );
 
   for (let i = 0; i < prices.length; i++) {
-    highestHighs.addValue(f32(prices[i].high));
-    lowestLows.addValue(f32(prices[i].low));
+    highestHighs.addValue(f64(prices[i].high));
+    lowestLows.addValue(f64(prices[i].low));
   }
 
-  const response = [highestHighs.getFormulaResult(), lowestLows.getFormulaResult()];
+  const response = highestHighs.isStable() ? [highestHighs.getFormulaResult(), lowestLows.getFormulaResult()] : [0, 0];
   
   return response;
 }
@@ -107,35 +120,72 @@ export function expandChannel(
 
 export function config(): string {
   return `{
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "Strategy Config",
-    "type": "object",
-    "properties": {
-      "period": {
-          "type": "number",
-          "description": "Lookback period for channel",
-          "default": 5
-      },
-      "multiplier": {
-          "type": "number",
-          "description": "Multiplier for channel width",
-          "default": 1.0
-      },
-      "poolFee": {
-        "description": "Pool fee percent for desired Uniswapv3 pool",
-        "enum" : [10000, 3000, 500, 100],
-        "enumNames": ["1%", "0.3%", "0.05%", "0.01%"]
-      },
-      "binWidth": {
-          "type": "number",
-          "description": "Width for liquidity position, must be a multiple of pool tick spacing",
-          "default": 600
-      }
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Strategy Config",
+  "type": "object",
+  "expectedDataTypes": ["OHLC"],
+  "properties": {
+    "lookback": {
+      "type": "number",
+      "title": "Channel Lookback",
+      "description": "Lookback period for channel",
+      "detailedDescription": "Number of candles to use for the channel",
+      "default": 5
     },
-    "required": ["period", "binWidth", "poolFee", "multiplier"]
-  }`;
+    "multiplier": {
+      "type": "number",
+      "title": "Channel Multiplier",
+      "description": "Multiplier for channel width",
+      "detailedDescription": "Example: 5% channel width = 1.05",
+      "default": 1
+    },
+    "poolFee": {
+      "description": "Pool fee percent for desired pool",
+      "title": "Pool Fee",
+      "enum": [
+        10000,
+        3000,
+        500,
+        100
+      ],
+      "enumNames": [
+        "1%",
+        "0.3%",
+        "0.05%",
+        "0.01%"
+      ]
+    },
+    ${PositionGenerator.propertyHelper([
+        PositionStyle.Normalized,
+        PositionStyle.Absolute,
+        // PositionStyle.Linear, // We always want linear
+        PositionStyle.Sigmoid,
+        PositionStyle.PowerLaw,
+        PositionStyle.Step,
+        // PositionStyle.Sine,
+        PositionStyle.Triangle,
+        PositionStyle.Quadratic,
+        PositionStyle.Cubic,
+        // PositionStyle.ExponentialDecay,
+        // PositionStyle.ExponentialGrowth,
+        // PositionStyle.Logarithmic,
+        // PositionStyle.LogarithmicDecay,
+        PositionStyle.Sawtooth,
+        PositionStyle.SquareWave
+    ])}
+  },
+  "allOf": [
+    ${PositionGenerator.allOf()}
+  ],
+  "required": [
+    "lookback",
+    "poolFee",
+    "multiplier"
+  ]
+}`;
 }
 
 export function version(): i32 {
   return 1;
 }
+
