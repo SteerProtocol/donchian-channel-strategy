@@ -66,11 +66,8 @@ export function execute(_prices: string): string {
   const lowerTick = formattedTicks[1];
   // Calculate positions
   const binWidth = i32(f32(getTickSpacing(configJson.poolFee)) * configJson.binSizeMultiplier);
-  // console.log('configJson.liquidityStyle: ' + configJson.liquidityShape)
-  const positionStyle = stringToPositionStyle(configJson.liquidityShape);
 
-  console.log('positionStyle: ' + positionStyle.toString())
-  console.log('positionStyle: ' + (u32(positionStyle) === u32(PositionStyle.Linear)).toString())
+  const positionStyle = stringToPositionStyle(configJson.liquidityShape);
   
   const positions = PositionGenerator.applyLiquidityShape(upperTick, lowerTick, configJson, binWidth, positionStyle);
   // const positions: Array<Position> = [new Position(i32(upperTick), i32(lowerTick), 10000)]
