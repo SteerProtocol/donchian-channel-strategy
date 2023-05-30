@@ -42,7 +42,7 @@ export function execute(_prices: string): string {
   const prices = parseCandles(_prices);
   // If we have no candles, skip action
   if (prices.length == 0) {
-    return renderULMResult([], 0);
+    return 'continue';
   }
 
   // Get Trailing stop price
@@ -52,7 +52,7 @@ export function execute(_prices: string): string {
   const lowerLimit: f64 = channelData[1];
 
   if(upperLimit == 0 || lowerLimit == 0) {
-    return renderULMResult([], 0);
+    return 'continue';
   }
 
   const expandedLimits = expandChannel(upperLimit, lowerLimit, configJson.multiplier);
@@ -86,24 +86,23 @@ export function donchianChannel(
   periods: i32
 ): Array<f64> {
 
-  if (prices.length < periods) {
-    return [0, 0];
-  }
+  const interval = prices.length < periods ? prices.length : periods
 
-  const highestHighs = new SlidingWindow<f64>(configJson.lookback, (window) =>
+  const highestHighs = new SlidingWindow<f64>(interval, (window) =>
     f64(window.reduce((acc, v) => Math.max(acc, v), -Infinity))
   );
-  const lowestLows = new SlidingWindow<f64>(configJson.lookback, (window) =>
+  const lowestLows = new SlidingWindow<f64>(interval, (window) =>
     f64(window.reduce((acc, v) => Math.min(acc, v), Infinity))
   );
 
-  for (let i = 0; i < prices.length; i++) {
+  // go from the back
+  for (let i = prices.length - interval; i < prices.length; i++) {
     highestHighs.addValue(f64(prices[i].high));
     lowestLows.addValue(f64(prices[i].low));
   }
 
-  const response = highestHighs.isStable() ? [highestHighs.getFormulaResult(), lowestLows.getFormulaResult()] : [0, 0];
-  
+  // const response = highestHighs.isStable() ? [highestHighs.getFormulaResult(), lowestLows.getFormulaResult()] : [0, 0];
+  const response = [highestHighs.getFormulaResult(), lowestLows.getFormulaResult()]
   return response;
 }
 

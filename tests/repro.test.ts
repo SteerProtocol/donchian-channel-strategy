@@ -538,13 +538,13 @@ describe("WASM Module", () => {
 
       // Call the config function on the strategy bundle
       const result = myModule.execute(JSON.stringify([...prices3]));
-      
+
       // Pull the result from memory and parse the result
       const parsedResult = JSON.parse(result);
 
       // The result should match the given config
       expect(JSON.stringify(parsedResult)).toStrictEqual(
-        `{\"functionName\":\"tend(uint256,(int24[],int24[],uint16[]),bytes)\",\"typesArray\":[\"uint256\",\"tuple(int24[],int24[],uint16[])\",\"bytes\"],\"valuesArray\":[10000,[[63300],[63420],[134]],\"0x7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff000000000000000000000000ffffffffffffffffffffffffffffffffffffffff\"]}`
+        `{\"functionName\":\"tend(uint256,(int24[],int24[],uint16[]),bytes)\",\"typesArray\":[\"uint256\",\"tuple(int24[],int24[],uint16[])\",\"bytes\"],\"valuesArray\":[10000,[[256140],[258240],[1]],\"0x7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff000000000000000000000000ffffffffffffffffffffffffffffffffffffffff\"]}`
       );
 
       expect(parsedResult.valuesArray[1][0][0]).not.toEqual(parsedResult.valuesArray[1][1][0])
