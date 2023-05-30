@@ -1,32 +1,500 @@
-export const config_payload = `{"period":5,"binWidth":120,"poolFee":3000,"multiplier":1.0}`;
+export const config_payload = `{        
+  "lookback": 72,
+  "multiplier": 1.1,
+  "poolFee": 3000,
+  "liquidityShape": "Linear"
+}`;
 
 export const config = `{
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Strategy Config",
   "type": "object",
+  "expectedDataTypes": ["OHLC"],
   "properties": {
-    "period": {
-        "type": "number",
-        "description": "Lookback period for channel",
-        "default": 5
+    "lookback": {
+      "type": "number",
+      "title": "Channel Lookback",
+      "description": "Lookback period for channel",
+      "detailedDescription": "Number of candles to use for the channel",
+      "default": 5
     },
     "multiplier": {
-        "type": "number",
-        "description": "Multiplier for channel width",
-        "default": 1.0
+      "type": "number",
+      "title": "Channel Multiplier",
+      "description": "Multiplier for channel width",
+      "detailedDescription": "Example: 5% channel width = 1.05",
+      "default": 1
     },
     "poolFee": {
-      "description": "Pool fee percent for desired Uniswapv3 pool",
-      "enum" : [10000, 3000, 500, 100],
-      "enumNames": ["1%", "0.3%", "0.05%", "0.01%"]
+      "description": "Pool fee percent for desired pool",
+      "title": "Pool Fee",
+      "enum": [
+        10000,
+        3000,
+        500,
+        100
+      ],
+      "enumNames": [
+        "1%",
+        "0.3%",
+        "0.05%",
+        "0.01%"
+      ]
     },
-    "binWidth": {
-        "type": "number",
-        "description": "Width for liquidity position, must be a multiple of pool tick spacing",
-        "default": 600
+    "liquidityShape": {
+      "enum": ["Linear","ExponentialDecay","Logarithmic","Sine","ExponentialGrowth","LogarithmicDecay"],
+      "title": "Liquidity Shape",
+      "type": "string",
+      "default": "Linear"
     }
   },
-  "required": ["period", "binWidth", "poolFee", "multiplier"]
+  "allOf": [
+    {
+    "if": {
+      "properties": {
+        "liquidityShape": {
+          "const": "Linear"
+        }
+      }
+    },
+    "then": {
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "if": {
+      "properties": {
+        "liquidityShape": {
+          "const": "Normalized"
+        }
+      }
+    },
+    "then": {
+      "properties": {
+        "binSizeMultiplier": {
+          "type": "number",
+          "title": "Position Scale"
+        },
+        "mean": {
+          "type": "number",
+          "title": "Mean"
+        },
+        "stdDev": {
+          "type": "number",
+          "title": "Standard Deviation"
+        }
+      },
+      "required": [
+        "binSizeMultiplier",
+        "mean",
+        "stdDev"
+      ]
+    }
+  },
+  {
+    "if": {
+      "properties": {
+        "liquidityShape": {
+          "const": "ExponentialDecay"
+        }
+      }
+    },
+    "then": {
+      "properties": {
+        "rate": {
+          "type": "number",
+          "title": "Rate",
+          "description": "Rate of decay",
+          "detailedDescription": "The higher the rate, the faster the decay."
+        }
+      },
+      "required": [
+        "rate"
+      ]
+    }
+  },
+  {
+    "if": {
+      "properties": {
+        "liquidityShape": {
+          "const": "Sigmoid"
+        }
+      }
+    },
+    "then": {
+      "properties": {
+        "binSizeMultiplier": {
+          "type": "number",
+          "title": "Position Scale"
+        },
+        "k": {
+          "type": "number",
+          "title": "K"
+        }
+      },
+      "required": [
+        "binSizeMultiplier",
+        "k"
+      ]
+    }
+  },
+  {
+    "if": {
+      "properties": {
+        "liquidityShape": {
+          "const": "Logarithmic"
+        }
+      }
+    },
+    "then": {
+      "properties": {
+        "binSizeMultiplier": {
+          "type": "number",
+          "title": "Position Scale"
+        },
+        "base": {
+          "type": "number",
+          "title": "Base"
+        }
+      },
+      "required": [
+        "binSizeMultiplier",
+        "base"
+      ]
+    }
+  },
+  {
+    "if": {
+      "properties": {
+        "liquidityShape": {
+          "const": "PowerLaw"
+        }
+      }
+    },
+    "then": {
+      "properties": {
+        "binSizeMultiplier": {
+          "type": "number",
+          "title": "Position Scale"
+        },
+        "exponent": {
+          "type": "number",
+          "title": "Exponent"
+        }
+      },
+      "required": [
+        "binSizeMultiplier",
+        "exponent"
+      ]
+    }
+  },
+  {
+    "if": {
+      "properties": {
+        "liquidityShape": {
+          "const": "Step"
+        }
+      }
+    },
+    "then": {
+      "properties": {
+        "binSizeMultiplier": {
+          "type": "number",
+          "title": "Position Scale"
+        },
+        "threshold": {
+          "type": "number",
+          "title": "Threshold"
+        }
+      },
+      "required": [
+        "binSizeMultiplier",
+        "threshold"
+      ]
+    }
+  },
+  {
+    "if": {
+      "properties": {
+        "liquidityShape": {
+          "const": "Sine"
+        }
+      }
+    },
+    "then": {
+      "properties": {
+        "binSizeMultiplier": {
+          "type": "number",
+          "title": "Position Scale"
+        },
+        "amplitude": {
+          "type": "number",
+          "title": "Amplitude"
+        },
+        "frequency": {
+          "type": "number",
+          "title": "Frequency"
+        },
+        "phase": {
+          "type": "number",
+          "title": "Phase"
+        }
+      },
+      "required": [
+        "binSizeMultiplier",
+        "amplitude",
+        "frequency",
+        "phase"
+      ]
+    }
+  },
+  {
+    "if": {
+      "properties": {
+        "liquidityShape": {
+          "const": "Triangle"
+        }
+      }
+    },
+    "then": {
+      "properties": {
+        "binSizeMultiplier": {
+          "type": "number",
+          "title": "Position Scale"
+        },
+        "amplitude": {
+          "type": "number",
+          "title": "Amplitude"
+        },
+        "period": {
+          "type": "number",
+          "title": "Period"
+        },
+        "phase": {
+          "type": "number",
+          "title": "Phase"
+        }
+      },
+      "required": [
+        "binSizeMultiplier",
+        "amplitude",
+        "period",
+        "phase"
+      ]
+    }
+  },
+  {
+    "if": {
+      "properties": {
+        "liquidityShape": {
+          "const": "Quadratic"
+        }
+      }
+    },
+    "then": {
+      "properties": {
+        "binSizeMultiplier": {
+          "type": "number",
+          "title": "Position Scale"
+        },
+        "a": {
+          "type": "number",
+          "title": "A"
+        },
+        "b": {
+          "type": "number",
+          "title": "B"
+        },
+        "c": {
+          "type": "number",
+          "title": "C"
+        }
+      },
+      "required": [
+        "binSizeMultiplier",
+        "a",
+        "b",
+        "c"
+      ]
+    }
+  },
+  {
+    "if": {
+      "properties": {
+        "liquidityShape": {
+          "const": "Cubic"
+        }
+      }
+    },
+    "then": {
+      "properties": {
+        "binSizeMultiplier": {
+          "type": "number",
+          "title": "Position Scale"
+        },
+        "a": {
+          "type": "number",
+          "title": "A"
+        },
+        "b": {
+          "type": "number",
+          "title": "B"
+        },
+        "c": {
+          "type": "number",
+          "title": "C"
+        },
+        "d": {
+          "type": "number",
+          "title": "D"
+        }
+      },
+      "required": [
+        "binSizeMultiplier",
+        "a",
+        "b",
+        "c",
+        "d"
+      ]
+    }
+  },
+  {
+    "if": {
+      "properties": {
+        "liquidityShape": {
+          "const": "ExponentialGrowth"
+        }
+      }
+    },
+    "then": {
+      "properties": {
+        "binSizeMultiplier": {
+          "type": "number",
+          "title": "Position Scale"
+        },
+        "rate": {
+          "type": "number",
+          "title": "Rate"
+        }
+      },
+      "required": [
+        "binSizeMultiplier",
+        "rate"
+      ]
+    }
+  },
+  {
+    "if": {
+      "properties": {
+        "liquidityShape": {
+          "const": "LogarithmicDecay"
+        }
+      }
+    },
+    "then": {
+      "properties": {
+        "binSizeMultiplier": {
+          "type": "number",
+          "title": "Position Scale"
+        },
+        "rate": {
+          "type": "number",
+          "title": "Rate"
+        },
+        "base": {
+          "type": "number",
+          "title": "Base"
+        }
+      },
+      "required": [
+        "binSizeMultiplier",
+        "rate",
+        "base"
+      ]
+    }
+  },
+  {
+    "if": {
+      "properties": {
+        "liquidityShape": {
+          "const": "Sawtooth"
+        }
+      }
+    },
+    "then": {
+      "properties": {
+        "binSizeMultiplier": {
+          "type": "number",
+          "title": "Position Scale"
+        },
+        "amplitude": {
+          "type": "number",
+          "title": "Amplitude"
+        },
+        "period": {
+          "type": "number",
+          "title": "Period"
+        },
+        "phase": {
+          "type": "number",
+          "title": "Phase"
+        }
+      },
+      "required": [
+        "binSizeMultiplier",
+        "amplitude",
+        "period",
+        "phase"
+      ]
+    }
+  },
+  {
+    "if": {
+      "properties": {
+        "liquidityShape": {
+          "const": "SquareWave"
+        }
+      }
+    },
+    "then": {
+      "properties": {
+        "binSizeMultiplier": {
+          "type": "number",
+          "title": "Position Scale"
+        },
+        "amplitude": {
+          "type": "number",
+          "title": "Amplitude"
+        },
+        "period": {
+          "type": "number",
+          "title": "Period"
+        },
+        "phase": {
+          "type": "number",
+          "title": "Phase"
+        }
+      },
+      "required": [
+        "binSizeMultiplier",
+        "amplitude",
+        "period",
+        "phase"
+      ]
+    }
+  },
+  {
+    "required": [
+      "liquidityShape"
+    ]
+  }
+  ],
+  "required": [
+    "lookback",
+    "poolFee",
+    "multiplier"
+  ]
 }`;
 
 export const empty = '{"data":[]}';
