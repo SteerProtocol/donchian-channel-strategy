@@ -1,16 +1,21 @@
 import { getTickFromPrice, getTickSpacing } from "@steerprotocol/concentrated-liquidity-strategy/assembly";
 import { Candle, _mean, _standardDeviation, closestDivisibleNumber } from "@steerprotocol/strategy-utils/assembly";
 
-class BollingerConfig {
+export class BollingerConfig {
     poolFee: i32 = 0;
-    period: i32 = 0;
+    lookback: i32 = 0;
     standardDeviations: f64 = 0;
+    constructor(_poolFee: i32, _lookback: i32, _standardDeviations: f64){
+        this.poolFee = _poolFee
+        this.lookback = _lookback
+        this.standardDeviations = _standardDeviations
+    }
 }
 
 export function getBollingerConfig(): string {
-    return `      "period": {
+    return `      "lookback": {
         "type": "number",
-        "description": "Number of candles in smoothing period (used for SMA)",
+        "description": "Number of candles in smoothing lookback (used for SMA)",
         "default": 20
     },
     "standardDeviations": {
@@ -35,8 +40,8 @@ export function bollingerLogic(prices: Candle[], configJson: BollingerConfig): i
   const upperLimit: f64 = priceSMA + (configJson.standardDeviations * stddev);
   const lowerLimit: f64 = priceSMA - (configJson.standardDeviations * stddev);
   
-  const upperTick = closestDivisibleNumber(i32(Math.round(getTickFromPrice(f64(upperLimit)))), getTickSpacing(configJson.poolFee), false);
-  const lowerTick = closestDivisibleNumber(i32(Math.round(getTickFromPrice(f64(lowerLimit)))), getTickSpacing(configJson.poolFee), true);
+  const upperTick = i64(closestDivisibleNumber(i32(Math.round(getTickFromPrice(f64(upperLimit)))), getTickSpacing(configJson.poolFee), false));
+  const lowerTick = i64(closestDivisibleNumber(i32(Math.round(getTickFromPrice(f64(lowerLimit)))), getTickSpacing(configJson.poolFee), true));
 
   return [lowerTick, upperTick]
 }

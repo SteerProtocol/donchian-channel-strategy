@@ -2,11 +2,17 @@ import { getTickSpacing, PositionGenerator, renderULMResult, getTickFromPrice } 
 import { Candle, closestDivisibleNumber, SlidingWindow } from "@steerprotocol/strategy-utils/assembly";
 
 
-class DonchianConfig {
+export class DonchianConfig {
     lookback: i32 = 0;                                       // Lookback period for the donchian channel
     multiplier: f32 = 0;                                     // Multiplier for the channel width
     binSizeMultiplier: f32 = 0;                              // Multiplier for the minimum tick spacing (Creates the position width)
-    poolFee: i64 = 0;
+    poolFee: i32 = 0;
+    constructor (_lookback: i32, _multiplier: f32, _binSizeM:f32, _poolFee: i32){
+      this.lookback = _lookback
+      this.multiplier = _multiplier
+      this.binSizeMultiplier = _binSizeM
+      this.poolFee = _poolFee
+    }
 }
 
 export function donchianLogic(prices: Candle[], configJson: DonchianConfig): i64[] {
@@ -25,7 +31,7 @@ export function donchianLogic(prices: Candle[], configJson: DonchianConfig): i64
     const expandedUpperLimit = expandedLimits[0];
     const expandedLowerLimit = expandedLimits[1];
     
-    const formattedTicks = formatTick(expandedUpperLimit, expandedLowerLimit, configJson.poolFee);
+    const formattedTicks = formatTick(expandedUpperLimit, expandedLowerLimit, f64(configJson.poolFee));
     
     const upperTick = formattedTicks[0];
     const lowerTick = formattedTicks[1];
@@ -37,9 +43,9 @@ export function donchianLogic(prices: Candle[], configJson: DonchianConfig): i64
 
   }
   
-  function formatTick(expandedUpperLimit: number, expandedLowerLimit: number, poolFee: number): Array<number> {
-    const upperTick = closestDivisibleNumber(i32(Math.round(getTickFromPrice(f32(expandedUpperLimit)))), getTickSpacing(i32(poolFee)), false);
-    const lowerTick = closestDivisibleNumber(i32(Math.round(getTickFromPrice(f32(expandedLowerLimit)))), getTickSpacing(i32(poolFee)), true);
+  function formatTick(expandedUpperLimit: number, expandedLowerLimit: number, poolFee: number): i64[] {
+    const upperTick = i64(closestDivisibleNumber(i32(Math.round(getTickFromPrice(f32(expandedUpperLimit)))), getTickSpacing(i32(poolFee)), false));
+    const lowerTick = i64(closestDivisibleNumber(i32(Math.round(getTickFromPrice(f32(expandedLowerLimit)))), getTickSpacing(i32(poolFee)), true));
     return [ upperTick, lowerTick ];
   }
   

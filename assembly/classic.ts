@@ -7,34 +7,38 @@ export const enum PlacementOptions {
     Under,
 }
 
-function getPlacementNames(placement: PlacementOptions): string {
-    switch (placement) {
-        case PlacementOptions.Over:
-            return 'Position over current price'
-        case PlacementOptions.Under:
-            return 'Position under current price'
+// function getPlacementNames(placement: PlacementOptions): string {
+//     switch (placement) {
+//         case PlacementOptions.Over:
+//             return 'Position over current price'
+//         case PlacementOptions.Under:
+//             return 'Position under current price'
 
-        default:
-            return 'Position centered around current price'
-    }
-}
+//         default:
+//             return 'Position centered around current price'
+//     }
+// }
 
 function getPlacementOptions(placement: string): PlacementOptions {
-    switch (placement) {
-        case 'Position over current price':
-            return PlacementOptions.Over
-        case 'Position under current price':
-            return PlacementOptions.Under
-    
-        default:
-            return PlacementOptions.Centered
+    if (placement === 'Position over current price') {
+        return PlacementOptions.Over;
+    } else if (placement === 'Position under current price') {
+        return PlacementOptions.Under;
+    } else {
+        return PlacementOptions.Centered;
     }
 }
 
-class ClassicConfig {
+
+export class ClassicConfig {
     placementType: string = "Position over current price";
-    positionSize: i64 = 600;
-    poolFee: i64 = 0;
+    positionSize: i32 = 600;
+    poolFee: i32 = 0;
+    constructor (_placementType: string, _positionSize: i32, _poolFee: i32){
+        this.placementType = _placementType
+        this.positionSize = _positionSize
+        this.poolFee = _poolFee
+      }
 }
 
 
@@ -43,11 +47,11 @@ export function classicLogic(currentTick: i64, configJson: ClassicConfig): i64[]
     const placement = getPlacementOptions(configJson.placementType)
 
     // clean up position size if necessary
-    const tickSpacing = getTickSpacing(configJson.poolFee)
-    const verifiedPositionSize = i64(closestDivisibleNumber(configJson.positionSize, tickSpacing, true));
+    const tickSpacing = getTickSpacing(i32(configJson.poolFee))
+    const verifiedPositionSize = i64(closestDivisibleNumber(f64(configJson.positionSize), tickSpacing, true));
     // get nearest initializable tick
     
-    const nearestTick = Math.round((f64(currentTick) / f64(tickSpacing) ) * f64(tickSpacing))
+    const nearestTick = i64(Math.round((f64(currentTick) / f64(tickSpacing) ) * f64(tickSpacing)))
     switch (placement) {
         
         case PlacementOptions.Over:

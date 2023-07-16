@@ -11,35 +11,34 @@ export const enum StrategyType {
     Classic
 }
 
-export function getStrategyEnum(strategy: string) : StrategyType {
-    switch (strategy) {
-        case 'Donchian Channel':
-            return StrategyType.Donchian
-        case 'Bollinger Band':
-            return StrategyType.Bollinger
-        case 'Keltner Channel':
-            return StrategyType.Keltner
-        // case 'Static Stable':
-        //     return StrategyType.Stable
-        default:
-            return StrategyType.Classic
-    }
+export function getStrategyEnum(strategy: string): StrategyType {
+  if (strategy === 'Donchian Channel') {
+      return StrategyType.Donchian;
+  } else if (strategy === 'Bollinger Band') {
+      return StrategyType.Bollinger;
+  } else if (strategy === 'Keltner Channel') {
+      return StrategyType.Keltner;
+  // } else if (strategy === 'Static Stable') {
+  //     return StrategyType.Stable;
+  } else {
+      return StrategyType.Classic;
+  }
 }
 
 export function getStrategyName(strategy: StrategyType): string {
-    switch (strategy) {
-        case StrategyType.Donchian :
-            return 'Donchian Channel'
-        case StrategyType.Bollinger :
-            return 'Bollinger Band'
-        case StrategyType.Keltner:
-            return  'Keltner Channel'
-        // case StrategyType.Stable:
-        //     return  'Static Stable'
-        default:
-            return 'Classic'
-    }
+  if (strategy === StrategyType.Donchian) {
+      return 'Donchian Channel';
+  } else if (strategy === StrategyType.Bollinger) {
+      return 'Bollinger Band';
+  } else if (strategy === StrategyType.Keltner) {
+      return 'Keltner Channel';
+  // } else if (strategy === StrategyType.Stable) {
+  //     return 'Static Stable';
+  } else {
+      return 'Classic';
+  }
 }
+
 
 export function StrategyConfig(): string {
     return `"strategy": {

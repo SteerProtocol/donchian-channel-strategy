@@ -2,10 +2,16 @@ import { getTickFromPrice, getTickSpacing } from "@steerprotocol/concentrated-li
 import { Candle, closestDivisibleNumber } from "@steerprotocol/strategy-utils/assembly";
 
 export class KeltnerConfig {
-    lookback: u32 = 0;
-    atrLength: u32 = 0;
+    lookback: i32 = 0;
+    atrLength: i32 = 0;
     multiplier: f64 = 0;
-    poolFee: u32 = 0;
+    poolFee: i32 = 0;
+    constructor (_lookback: i32, _atrLength: i32, _multiplier: f32, _poolFee: i32){
+      this.lookback = _lookback
+      this.multiplier = _multiplier
+      this.atrLength = _atrLength
+      this.poolFee = _poolFee
+    }
 }
 
 export function getKeltnerConfig(): string {
@@ -32,7 +38,7 @@ export function keltnerLogic(candles: Candle[], configJson: KeltnerConfig): i64[
     const ema = emas[emas.length-1];
     // return ema.toString()
   
-    const atrLookback = candles.length < configJson.atrLength ? candles.length : configJson.atrLength;
+    const atrLookback = i32(candles.length) < i32(configJson.atrLength) ? candles.length : configJson.atrLength;
   
     // loop through last lookback and get atr
     const atr = calculateATR(candles, atrLookback);

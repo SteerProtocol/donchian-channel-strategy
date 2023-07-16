@@ -92,25 +92,25 @@ export const enum TriggerStyle {
     None,
 }
 
-export function TriggerStyleLookup(triggerStyle: TriggerStyle): string {
-    switch (triggerStyle) {
-        case TriggerStyle.DistanceFromCenterOfPositions:
-            return "Distance from center of position(s)";
-        case TriggerStyle.PercentageChangeFromPositionRange:
-            return "Percentage of position(s)";
-        case TriggerStyle.PositionsInactive:
-            return "Positions Inactive";
-        // case TriggerStyle.SpecificPrice:
-        //     return "Specific Price";
-        case TriggerStyle.PricePastPositions:
-            return "Price moved past position(s)";
-        case TriggerStyle.None:
-          return 'None'
+// export function TriggerStyleLookup(triggerStyle: TriggerStyle): string {
+//     switch (triggerStyle) {
+//         case TriggerStyle.DistanceFromCenterOfPositions:
+//             return "Distance from center of position(s)";
+//         case TriggerStyle.PercentageChangeFromPositionRange:
+//             return "Percentage of position(s)";
+//         case TriggerStyle.PositionsInactive:
+//             return "Positions Inactive";
+//         // case TriggerStyle.SpecificPrice:
+//         //     return "Specific Price";
+//         case TriggerStyle.PricePastPositions:
+//             return "Price moved past position(s)";
+//         case TriggerStyle.None:
+//           return 'None'
 
-    default:
-        throw new Error(`Unknown trigger style: ${triggerStyle}`);
-    }
-}
+//     default:
+//         throw new Error(`Unknown trigger style: ${triggerStyle}`);
+//     }
+// }
 
 export class DistanceFromCenterOfPositionsOptions {
     tickDistanceFromCenter: i64 = 0;
@@ -168,35 +168,35 @@ export function shouldTriggerExecution(triggerStyle: TriggerStyle, triggerOption
     let currentTick: i64;
 
     // auto trigger if we are overdue
-    const timeSinceLastExecution = parseInt(dataConnector3)
-    if (timeSinceLastExecution >= triggerOptions.elapsedTendTime) return true
+    const timeSinceLastExecution = i64(parseInt(dataConnector3))
+    if (timeSinceLastExecution >= i64(triggerOptions.elapsedTendTime)) return true
 
     switch (triggerStyle) {
         case TriggerStyle.DistanceFromCenterOfPositions:
             // parse ulm positions [0], current tick [1]
             currentPositionRange = parseActiveRange(dataConnector1)
-            currentTick = parseInt(dataConnector2)
+            currentTick = i64(parseInt(dataConnector2))
             if (!currentTick) return true
             return triggerFromDistance(currentPositionRange, triggerOptions.tickDistanceFromCenter, currentTick)
 
         case TriggerStyle.PercentageChangeFromPositionRange:
             // parse ulm positions [0], current tick [1]
             currentPositionRange= parseActiveRange(dataConnector1)
-            currentTick = parseInt(dataConnector2)
+            currentTick = i64(parseInt(dataConnector2))
             if (!currentTick) return true
             return triggerFromPercentage(currentPositionRange, triggerOptions.percentageOfPositionRangeToTrigger, currentTick)
 
         case TriggerStyle.PositionsInactive:
             // parse ulm positions [0], current tick [1]
             currentPositionRange = parseActiveRange(dataConnector1)
-            currentTick = parseInt(dataConnector2)
+            currentTick = i64(parseInt(dataConnector2))
             if (!currentTick) return true
             return triggerPositionsInactive(currentPositionRange, currentTick)
 
         case TriggerStyle.PricePastPositions:
             // parse ulm positions [0], current tick [1]
             currentPositionRange = parseActiveRange(dataConnector1)
-            currentTick = parseInt(dataConnector2)
+            currentTick = i64(parseInt(dataConnector2))
             if (!currentTick) return true
             return triggerPricePastPositions(currentPositionRange, currentTick,  triggerOptions.triggerWhenOver)
         default:
@@ -204,39 +204,34 @@ export function shouldTriggerExecution(triggerStyle: TriggerStyle, triggerOption
     }
 }
 
-// Find TriggerStyle from string
 export function getTriggerStyle(trigger: string): TriggerStyle {
-    switch (trigger) {
-        case 'Current Price set distance from center of positions':
-            return TriggerStyle.DistanceFromCenterOfPositions
-        case 'Price leaves active range':
-            return TriggerStyle.PositionsInactive
-        case 'Price moves percentage of active range away':
-            return TriggerStyle.PercentageChangeFromPositionRange
-        case 'Price moves one way past positions':
-            return TriggerStyle.PricePastPositions
-    
-        default:
-            return TriggerStyle.None
-    }
+  if (trigger === 'Current Price set distance from center of positions') {
+      return TriggerStyle.DistanceFromCenterOfPositions;
+  } else if (trigger === 'Price leaves active range') {
+      return TriggerStyle.PositionsInactive;
+  } else if (trigger === 'Price moves percentage of active range away') {
+      return TriggerStyle.PercentageChangeFromPositionRange;
+  } else if (trigger === 'Price moves one way past positions') {
+      return TriggerStyle.PricePastPositions;
+  } else {
+      return TriggerStyle.None;
+  }
 }
 
-// Find string from TriggerStyle
 function getTriggerName(trigger: TriggerStyle): string {
-    switch (trigger) {
-        case TriggerStyle.DistanceFromCenterOfPositions:
-            return  'Current Price set distance from center of positions'
-        case TriggerStyle.PositionsInactive:
-            return  'Price leaves active range'
-        case TriggerStyle.PercentageChangeFromPositionRange:
-            return  'Price moves percentage of active range away'
-        case TriggerStyle.PricePastPositions:
-            return  'Price moves one way past positions'
-    
-        default:
-            return 'None'
-    }
+  if (trigger === TriggerStyle.DistanceFromCenterOfPositions) {
+      return 'Current Price set distance from center of positions';
+  } else if (trigger === TriggerStyle.PositionsInactive) {
+      return 'Price leaves active range';
+  } else if (trigger === TriggerStyle.PercentageChangeFromPositionRange) {
+      return 'Price moves percentage of active range away';
+  } else if (trigger === TriggerStyle.PricePastPositions) {
+      return 'Price moves one way past positions';
+  } else {
+      return 'None';
+  }
 }
+
 
 export function triggerPropertyHelper(omit: TriggerStyle[] = []): string {
     const triggerList = [

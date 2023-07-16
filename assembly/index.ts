@@ -2,22 +2,21 @@ import { CurvesConfigHelper, PositionGenerator, stringToPositionStyle, getTickFr
 import { console, Candle, SlidingWindow, parseCandles, Position, closestDivisibleNumber } from "@steerprotocol/strategy-utils/assembly";
 import { JSON } from "json-as/assembly";
 import { TriggerConfigHelper, TriggerStyle, allOfTrigger, getTriggerStyle, shouldTriggerExecution, triggerPropertyHelper } from "./triggers";
-import { donchianLogic } from "./donchian";
+import { DonchianConfig, donchianLogic } from "./donchian";
 import { StrategyType, allOfStrategy, getStrategyEnum } from "./strategyHelper";
-import { bollingerLogic } from "./bollinger";
-import { keltnerLogic } from "./keltner";
-import { classicLogic } from "./classic";
+import { BollingerConfig, bollingerLogic } from "./bollinger";
+import { KeltnerConfig, keltnerLogic } from "./keltner";
+import { ClassicConfig, classicLogic } from "./classic";
 
 // @JSON // @Note TriggerConfigHelper extends Curves Library
 class Config extends TriggerConfigHelper {
   lookback: i32 = 0;                                       // Lookback period for the donchian channel
   multiplier: f32 = 0;                                     // Multiplier for the channel width
   binSizeMultiplier: f32 = 0;                              // Multiplier for the minimum tick spacing (Creates the position width)
-  period: i32 = 0;
   standardDeviations: f64 = 0;
   atrLength: u32 = 0;
   placementType: string = "Position over current price";
-  positionSize: i64 = 600;
+  positionSize: i32 = 600;
   elapsedTendTime: i64 = 0;
   poolFee: i32 = 0;                                        // Pool fee
   liquidityShape: string = 'Absolute';                      // Liquidity style
@@ -52,22 +51,26 @@ export function execute(_prices: string, _positions: string, _currentTick: strin
   const strategyType = getStrategyEnum(configJson.strategy)
   switch (strategyType) {
     case StrategyType.Bollinger:
-      ticks = bollingerLogic(prices, configJson)
+      const bollingerConfigObj = new BollingerConfig(configJson.poolFee, configJson.lookback, configJson.standardDeviations)
+      ticks = bollingerLogic(prices, bollingerConfigObj)
       break;
     // case StrategyType.Stable:
     //   ticks = stableLogic()
     //   break;
     case StrategyType.Donchian:
-      ticks = donchianLogic(prices, configJson)
+      const donchianConfigObj = new DonchianConfig(configJson.lookback, configJson.multiplier, configJson.binSizeMultiplier, configJson.poolFee)
+      ticks = donchianLogic(prices, donchianConfigObj)
       break;
     case StrategyType.Keltner:
-      ticks = keltnerLogic(prices, configJson)
+      const keltnerConfigObj = new KeltnerConfig(configJson.lookback, configJson.atrLength, configJson.multiplier, configJson.poolFee)
+      ticks = keltnerLogic(prices, keltnerConfigObj)
       break
   
     default:
-      const currentTick = parseInt(_currentTick)
+      const currentTick = i64(parseInt(_currentTick))
       if (!currentTick) throw new Error("Err on current tick");
-      ticks = classicLogic(currentTick, configJson)
+      const classicConfigObj = new ClassicConfig(configJson.placementType, configJson.positionSize, configJson.poolFee)
+      ticks = classicLogic(currentTick, classicConfigObj)
       break;
   }
   
@@ -78,7 +81,7 @@ export function execute(_prices: string, _positions: string, _currentTick: strin
   const curveType = stringToPositionStyle(configJson.liquidityShape)
   // Calculate positions
   const binWidth = i32(f32(getTickSpacing(configJson.poolFee)) * configJson.binSizeMultiplier);
-  const positions = PositionGenerator.applyLiquidityShape(upperTick, lowerTick, configJson, binWidth, curveType);
+  const positions = PositionGenerator.applyLiquidityShape(f64(upperTick), f64(lowerTick), configJson, binWidth, curveType);
   // Format and return result
   return renderULMResult(positions, 10000);
 }
