@@ -93,5 +93,5 @@ export function getClassicConfig(): string {
       "positionSize": {
         "type": "integer",
         "title": "Size of Position in ticks (BPS)"
-      },`
+      }`
 }

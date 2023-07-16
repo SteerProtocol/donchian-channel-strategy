@@ -22,7 +22,7 @@ export function getBollingerConfig(): string {
         "type": "number",
         "description": "How many standard deviations from the SMA to set the position",
         "default": 2
-    },`
+    }`
 }
 
 export function bollingerLogic(prices: Candle[], configJson: BollingerConfig): i64[] {

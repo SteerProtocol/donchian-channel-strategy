@@ -242,15 +242,21 @@ export function triggerPropertyHelper(omit: TriggerStyle[] = []): string {
         TriggerStyle.PricePastPositions,
     ];
 
-    const filteredTriggers: string[] = [];
-    for(let trigger = 0; trigger < triggerList.length; trigger++){
-      if (!omit.includes(  triggerList[trigger])) {
-        filteredTriggers.push(getTriggerName(triggerList[trigger]));
-      }
-    }
+    const filteredTriggers: string[] = [
+      'Current Price set distance from center of positions',
+      'Price leaves active range',
+      'Price moves percentage of active range away',
+      'Price moves one way past positions',
+      'None'
+    ];
+    // for(let trigger = 0; trigger < triggerList.length; trigger++){
+    //   if (!omit.includes(  triggerList[trigger])) {
+    //     filteredTriggers.push(getTriggerName(triggerList[trigger]));
+    //   }
+    // }
 
     return `"triggerStyle": {
-      "enum": ${JSON.stringify(triggerList)},
+      "enum": ${JSON.stringify(filteredTriggers)},
       "title": "Logic to trigger new positions",
       "type": "string",
       "default": "None"
@@ -287,7 +293,7 @@ export function triggerPropertyHelper(omit: TriggerStyle[] = []): string {
             "description": "The number of ticks (basis points) from center price of positions to trigger setting new positions"
         }
       },
-      "required": [tickDistanceFromCenter]
+      "required": ["tickDistanceFromCenter"]
     }
   },
   {
@@ -319,9 +325,9 @@ export function triggerPropertyHelper(omit: TriggerStyle[] = []): string {
             "description": "The percentage of the range away to trigger new positions, 100% or 1 would be at the bounds of the range"
         }
       },
-      "required": [percentageOfPositionRangeToTrigger]
+      "required": ["percentageOfPositionRangeToTrigger"]
     }
-  },,
+  },
   {
     "if": {
       "properties": {
@@ -338,7 +344,7 @@ export function triggerPropertyHelper(omit: TriggerStyle[] = []): string {
             "description": "True for if the strategy should set new positions when the price (tick) is higher than the current positions, false for lower"
         }
       },
-      "required": [triggerWhenOver]
+      "required": ["triggerWhenOver"]
     }
   }`;
 }

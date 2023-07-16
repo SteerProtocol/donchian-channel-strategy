@@ -29,7 +29,7 @@ export function getKeltnerConfig(): string {
         "type": "number",
         "description": "Number of ATRs out from the EMA the bounds should be made",
         "default": 2
-      },`
+      }`
 }
 
 export function keltnerLogic(candles: Candle[], configJson: KeltnerConfig): i64[] {

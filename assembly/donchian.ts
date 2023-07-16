@@ -96,5 +96,5 @@ export function donchianLogic(prices: Candle[], configJson: DonchianConfig): i64
         "description": "Multiplier for channel width",
         "detailedDescription": "Example: 5% channel width = 1.05",
         "default": 1
-      },`
+      }`
   }

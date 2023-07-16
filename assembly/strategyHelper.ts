@@ -43,10 +43,10 @@ export function getStrategyName(strategy: StrategyType): string {
 export function StrategyConfig(): string {
     return `"strategy": {
         "enum": [
-            'Donchian Channel',
-            'Bollinger Band',
-            'Keltner Channel',
-            'Classic'
+            "Donchian Channel",
+            "Bollinger Band",
+            "Keltner Channel",
+            "Classic"
         ],
         "title": "Strategy Type",
         "type": "string",

@@ -3,7 +3,7 @@ import { console, Candle, SlidingWindow, parseCandles, Position, closestDivisibl
 import { JSON } from "json-as/assembly";
 import { TriggerConfigHelper, TriggerStyle, allOfTrigger, getTriggerStyle, shouldTriggerExecution, triggerPropertyHelper } from "./triggers";
 import { DonchianConfig, donchianLogic } from "./donchian";
-import { StrategyType, allOfStrategy, getStrategyEnum } from "./strategyHelper";
+import { StrategyConfig, StrategyType, allOfStrategy, getStrategyEnum } from "./strategyHelper";
 import { BollingerConfig, bollingerLogic } from "./bollinger";
 import { KeltnerConfig, keltnerLogic } from "./keltner";
 import { ClassicConfig, classicLogic } from "./classic";
@@ -114,8 +114,9 @@ export function config(): string {
       "description": "Regardless of the new position trigger conditions, the strategy will execute if this amount of time has elapsed.",
       "type": "integer",
       "default": 604800
-    }
+    },
     ${triggerPropertyHelper()},
+    ${StrategyConfig()},
     ${PositionGenerator.propertyHelper([
         PositionStyle.Normalized,
         PositionStyle.Absolute,
@@ -138,8 +139,8 @@ export function config(): string {
   "allOf": [
     ${PositionGenerator.allOf()},
     ${allOfTrigger()},
-    ${allOfStrategy}
-  ],
+    ${allOfStrategy()}
+  ]
 }`;
 }
 
