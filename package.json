@@ -40,7 +40,7 @@
   },
   "devDependencies": {
     "@babel/preset-env": "^7.14.8",
-    "@steerprotocol/app-loader": "^0.1.1",
+    "@steerprotocol/app-loader": "^0.1.6",
     "@types/jest": "^27.0.1",
     "@types/node": "^16.11.11",
     "@types/node-fetch": "^2.6.2",

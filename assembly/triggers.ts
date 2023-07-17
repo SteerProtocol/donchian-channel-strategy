@@ -112,19 +112,19 @@ export const enum TriggerStyle {
 //     }
 // }
 
-export class DistanceFromCenterOfPositionsOptions {
-    tickDistanceFromCenter: i64 = 0;
-    requiredDataTypes: string[] = ['Liquidity Manager Positions', 'V3 Pool Current Tick'];
-}
+// export class DistanceFromCenterOfPositionsOptions {
+//     tickDistanceFromCenter: i64 = 0;
+//     requiredDataTypes: string[] = ['Liquidity Manager Positions', 'V3 Pool Current Tick'];
+// }
 
-export class PercentageChangeFromPositionRangeOptions {
-    percentageOfPositionRangeToTrigger: f64 = 0.0;
-    requiredDataTypes: string[] = ['Liquidity Manager Positions', 'V3 Pool Current Tick'];
-}
+// export class PercentageChangeFromPositionRangeOptions {
+//     percentageOfPositionRangeToTrigger: f64 = 0.0;
+//     requiredDataTypes: string[] = ['Liquidity Manager Positions', 'V3 Pool Current Tick'];
+// }
 
-export class PositionsInactiveOptions {
-    requiredDataTypes: string[] = ['Liquidity Manager Positions', 'V3 Pool Current Tick'];
-}
+// export class PositionsInactiveOptions {
+//     requiredDataTypes: string[] = ['Liquidity Manager Positions', 'V3 Pool Current Tick'];
+// }
 
 // export class SpecificPriceOptions {
 //     tickPriceTrigger: i64 = 0;
@@ -132,18 +132,25 @@ export class PositionsInactiveOptions {
 //     requiredDataTypes: string[] = ['V3 Pool Current Tick'];
 // }
 
-export class PricePastPositionsOptions {
-    triggerWhenOver: boolean = false;
-    requiredDataTypes: string[] = ['Liquidity Manager Positions', 'V3 Pool Current Tick'];
-}
+// export class PricePastPositionsOptions {
+//     triggerWhenOver: boolean = false;
+//     requiredDataTypes: string[] = ['Liquidity Manager Positions', 'V3 Pool Current Tick'];
+// }
 
-export class TriggerConfigHelper extends CurvesConfigHelper {
-    triggerType: TriggerStyle = TriggerStyle.PositionsInactive;
+export class TriggerConfigHelper {
+    // triggerType: string = "Price leaves active range";
     triggerWhenOver: boolean = false;
     tickPriceTrigger: i64 = 0;
     percentageOfPositionRangeToTrigger: f64 = 0.0;
     tickDistanceFromCenter: i64 = 0;
     elapsedTendTime: i64 = 0;
+    constructor( t: boolean, tpt: i64, poptrr:f64, tdfc: i64, ett: i64) {
+      this.triggerWhenOver = t
+      this.tickPriceTrigger = tpt
+      this.percentageOfPositionRangeToTrigger = poptrr
+      this.tickDistanceFromCenter = tdfc
+      this.elapsedTendTime = ett
+    }
 }
 
 // no AS func overloading yet :(

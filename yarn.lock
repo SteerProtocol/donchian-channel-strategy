@@ -1351,13 +1351,6 @@
   dependencies:
     "@sinonjs/commons" "^1.7.0"
 
-"@steerprotocol/app-loader@^0.1.1":
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/@steerprotocol/app-loader/-/app-loader-0.1.1.tgz#2b1ad37d193f3ed904da20e55584f54059745a11"
-  integrity sha512-ROrcxzXbcXs2CLG9sgjH3BCWQIMw0LnJX1eOEVKMq12Y9fkeBzgN8zjW2RUblyaRLDLIUATaWhjHF/yX9h3dQQ==
-  dependencies:
-    pondjs "1.0.0-alpha.10"
-
 "@steerprotocol/app-loader@^0.1.6":
   version "0.1.6"
   resolved "https://registry.yarnpkg.com/@steerprotocol/app-loader/-/app-loader-0.1.6.tgz#4e35c7e2358ce96f565b2ca994ae033ead097049"

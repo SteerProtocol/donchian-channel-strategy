@@ -5,6 +5,34 @@ export const config_payload = `{
   "liquidityShape": "Linear"
 }`;
 
+export const easy_config = `{
+  "elapsedTendTime": 604800,
+  "triggerStyle": "None",
+  "strategy": "Classic",
+  "liquidityShape": "Linear",
+  "poolFee": 3000,
+  "placementType": "Position centered around current price",
+  "triggerWhenOver": true,
+  "positionSize": 600
+}`
+//Position under current price
+//Position centered around current price
+
+export const bollinger_config = `{
+  "elapsedTendTime": 604800,
+  "triggerStyle": "Price leaves active range",
+  "strategy": "Bollinger Band",
+  "liquidityShape": "Linear",
+  "lookback": 5,
+  "standardDeviations": 2,
+  "multiplier": 1,
+  "atrLength": 10,
+  "poolFee": 3000,
+  "placementType": "Position centered around current price",
+  "triggerWhenOver": true,
+  "positionSize": 600
+}`
+
 export const config = `{
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Strategy Config",

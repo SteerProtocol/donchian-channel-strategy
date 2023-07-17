@@ -1,15 +1,16 @@
 import { CurvesConfigHelper, PositionGenerator, stringToPositionStyle, getTickFromPrice, getTickSpacing, renderULMResult, PositionStyle } from "@steerprotocol/concentrated-liquidity-strategy/assembly";
 import { console, Candle, SlidingWindow, parseCandles, Position, closestDivisibleNumber } from "@steerprotocol/strategy-utils/assembly";
 import { JSON } from "json-as/assembly";
-import { TriggerConfigHelper, TriggerStyle, allOfTrigger, getTriggerStyle, shouldTriggerExecution, triggerPropertyHelper } from "./triggers";
+import { TriggerConfigHelper, TriggerStyle, allOfTrigger, getTriggerStyle, shouldTriggerExecution, triggerFromDistance, triggerPropertyHelper } from "./triggers";
 import { DonchianConfig, donchianLogic } from "./donchian";
 import { StrategyConfig, StrategyType, allOfStrategy, getStrategyEnum } from "./strategyHelper";
 import { BollingerConfig, bollingerLogic } from "./bollinger";
 import { KeltnerConfig, keltnerLogic } from "./keltner";
 import { ClassicConfig, classicLogic } from "./classic";
 
-// @JSON // @Note TriggerConfigHelper extends Curves Library
-class Config extends TriggerConfigHelper {
+@json // @Note TriggerConfigHelper extends Curves Library
+
+class Config  {
   lookback: i32 = 0;                                       // Lookback period for the donchian channel
   multiplier: f32 = 0;                                     // Multiplier for the channel width
   binSizeMultiplier: f32 = 0;                              // Multiplier for the minimum tick spacing (Creates the position width)
@@ -22,6 +23,37 @@ class Config extends TriggerConfigHelper {
   liquidityShape: string = 'Absolute';                      // Liquidity style
   triggerStyle: string = 'None'
   strategy: string = 'Bollinger Band'
+  // trigger
+  triggerWhenOver: boolean = false;
+  tickPriceTrigger: i64 = 0;
+  percentageOfPositionRangeToTrigger: f64 = 0.0;
+  tickDistanceFromCenter: i64 = 0;
+  // active curve
+    // ExponentialDecayOptions
+    rate: f64 = 0;
+    // NormalOptions
+    mean: f64 = 0;
+    stdDev: f64 = 0;
+    // SigmoidOptions
+    k: f64 = 0;
+    // LogarithmicOptions
+    base: f64 = 0;
+    // PowerLawOptions
+    exponent: f64 = 0;
+    // StepOptions
+    threshold: f64 = 0;
+    // SineOptions
+    amplitude: f64 = 0;
+    frequency: f64 = 0;
+    phase: f64 = 0;
+    // TriangleOptions
+    period: f64 = 0;
+    // QuadraticOptions
+    a: f64 = 0;
+    b: f64 = 0;
+    c: f64 = 0;
+    // CubicOptions
+    d: f64 = 0;
 }
 
 // 
@@ -31,8 +63,9 @@ export function initialize(config: string): void {
   // Parse the config object
   configJson = JSON.parse<Config>(config);
 
+
   // Assign values to memory
-  configJson.poolFee = i32(configJson.poolFee);
+  // configJson.poolFee = i32(configJson.poolFee); 
 }
 
 export function execute(_prices: string, _positions: string, _currentTick: string, _timeSinceLastExecution: string): string {
@@ -44,7 +77,8 @@ export function execute(_prices: string, _positions: string, _currentTick: strin
   }
   // HANDLE TRIGGER LOGIC
   const trigger = getTriggerStyle(configJson.triggerStyle)
-  if (!shouldTriggerExecution(trigger, configJson, _positions, _currentTick, _timeSinceLastExecution)) return 'continue'
+  const triggerObj = new TriggerConfigHelper(configJson.triggerWhenOver, configJson.tickPriceTrigger, configJson.percentageOfPositionRangeToTrigger, configJson.tickDistanceFromCenter, configJson.elapsedTendTime)
+  if (!shouldTriggerExecution(trigger, triggerObj, _positions, _currentTick, _timeSinceLastExecution)) return 'continue'
 
   // Get strat range
   let ticks: i64[] = []
@@ -69,10 +103,13 @@ export function execute(_prices: string, _positions: string, _currentTick: strin
     default:
       const currentTick = i64(parseInt(_currentTick))
       if (!currentTick) throw new Error("Err on current tick");
+      // return configJson.positionSize.toString()
       const classicConfigObj = new ClassicConfig(configJson.placementType, configJson.positionSize, configJson.poolFee)
       ticks = classicLogic(currentTick, classicConfigObj)
       break;
   }
+  // @todo
+  // return (ticks.toString())
   
   const lowerTick = ticks[0];
   const upperTick = ticks[1];
@@ -81,7 +118,34 @@ export function execute(_prices: string, _positions: string, _currentTick: strin
   const curveType = stringToPositionStyle(configJson.liquidityShape)
   // Calculate positions
   const binWidth = i32(f32(getTickSpacing(configJson.poolFee)) * configJson.binSizeMultiplier);
-  const positions = PositionGenerator.applyLiquidityShape(f64(upperTick), f64(lowerTick), configJson, binWidth, curveType);
+  const positions = PositionGenerator.applyLiquidityShape(f64(upperTick), f64(lowerTick),
+  {
+      // ExponentialDecayOptions
+  rate: configJson.rate,
+  // NormalOptions
+  mean: configJson.mean,
+  stdDev:  configJson.stdDev,
+  // SigmoidOptions
+  k:  configJson.k,
+  // LogarithmicOptions
+  base:  configJson.base, 
+  // PowerLawOptions
+  exponent:  configJson.exponent, 
+  // StepOptions
+  threshold:  configJson.threshold,
+  // SineOptions
+  amplitude:  configJson.amplitude,
+  frequency: configJson.frequency,
+  phase:  configJson.phase,
+  // TriangleOptions
+  period:  f64(configJson.period), // note overloaded var, @todo
+  // QuadraticOptions
+  a:  configJson.a,
+  b:  configJson.b,
+  c:  configJson.c, 
+  // CubicOptions
+  d:  configJson.d
+  }, binWidth, curveType);
   // Format and return result
   return renderULMResult(positions, 10000);
 }

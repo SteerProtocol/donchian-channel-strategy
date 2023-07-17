@@ -49,36 +49,21 @@ export function classicLogic(currentTick: i64, configJson: ClassicConfig): i64[]
     // clean up position size if necessary
     const tickSpacing = getTickSpacing(i32(configJson.poolFee))
     const verifiedPositionSize = i64(closestDivisibleNumber(f64(configJson.positionSize), tickSpacing, true));
+    // return [tickSpacing, configJson.positionSize]
     // get nearest initializable tick
     
-    const nearestTick = i64(Math.round((f64(currentTick) / f64(tickSpacing) ) * f64(tickSpacing)))
-    switch (placement) {
-        
-        case PlacementOptions.Over:
-            return [nearestTick, nearestTick + verifiedPositionSize]
-        case PlacementOptions.Under:
-            return [nearestTick - verifiedPositionSize, nearestTick]
-
-        default:
-            //if odd bins, roll closer
-            const numSpaces = (verifiedPositionSize / tickSpacing)
-            if (numSpaces % 2 != 0) {
-                const gPos = (numSpaces - 1 / 2)
-                // roll up if closer
-                // const diff = (currentTick - nearestTick)
-                if (nearestTick >= currentTick) {
-                    //extra goes under
-                    return [nearestTick - ((gPos+1) * tickSpacing), nearestTick + (gPos * tickSpacing)]
-                }
-                else {
-                    // extra goes over
-                    return [nearestTick - (gPos * tickSpacing), nearestTick + ((gPos+1) * tickSpacing)]
-                }
-            }
-            // else split and return
-            const halfDist = verifiedPositionSize / 2
-            return [nearestTick - halfDist, nearestTick + halfDist]
-    }
+    // const nearestTick = i64(Math.round((f64(currentTick) / f64(tickSpacing) ) * f64(tickSpacing)))
+    if (placement == PlacementOptions.Over) {
+        const tickUnder = i32(closestDivisibleNumber(f64(currentTick), tickSpacing, true))
+        return [tickUnder, tickUnder + verifiedPositionSize]}
+    if (placement == PlacementOptions.Under) {
+        const tickOver = i32(closestDivisibleNumber(f64(currentTick), tickSpacing, false))
+        return [tickOver - verifiedPositionSize, tickOver]}
+    
+    const halfDist = verifiedPositionSize / 2
+    const upper = i32(closestDivisibleNumber(f64(currentTick + halfDist), tickSpacing, false))
+    const lower = i32(closestDivisibleNumber(f64(currentTick - halfDist), tickSpacing, true))
+    return [lower, upper]
 }
 
 export function getClassicConfig(): string {

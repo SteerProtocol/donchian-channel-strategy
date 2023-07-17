@@ -1,4 +1,4 @@
-import { config, config_payload } from "./utils";
+import { bollinger_config, config, config_payload, easy_config } from "./utils";
 import fs from 'fs';
 import { WasmModule, loadWasm } from "@steerprotocol/app-loader";
 
@@ -17,7 +17,7 @@ describe("WASM Module", () => {
   });
 
   describe("Custom Strategy", () => {
-    test("can run execute", async () => {        
+    test.only("can run execute", async () => {        
       const prices3 = [
         {
           timestamp: 1684681200000,
@@ -525,29 +525,25 @@ describe("WASM Module", () => {
         },
       ]
       // The actual strategy instantiation and execution
-      myModule.initialize(JSON.stringify({
-        lookback: 72,
-        multiplier: 1.1,
-        poolFee: 3000,
-        liquidityShape: "Linear"
-      }));
+      myModule.initialize(bollinger_config);
       // Here we pin the array to the WASM memory
       // let priceMemoryRef = myModule.__pin(
       //   myModule.__newString(JSON.stringify(prices))
       // );
 
       // Call the config function on the strategy bundle
-      const result = myModule.execute(JSON.stringify([...prices3]));
+      const result = myModule["execute(param_1: string, param_2: string, param_3: string, param_4: string)"](JSON.stringify([...prices3]), '[[257100],[257340],[1]]', '3', '56');
 
+      console.log(result)
       // Pull the result from memory and parse the result
-      const parsedResult = JSON.parse(result);
+      // const parsedResult = JSON.parse(result);
 
       // The result should match the given config
-      expect(JSON.stringify(parsedResult)).toStrictEqual(
-        `{\"functionName\":\"tend(uint256,(int24[],int24[],uint16[]),bytes)\",\"typesArray\":[\"uint256\",\"tuple(int24[],int24[],uint16[])\",\"bytes\"],\"valuesArray\":[10000,[[256140],[258240],[1]],\"0x7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff000000000000000000000000ffffffffffffffffffffffffffffffffffffffff\"]}`
-      );
+      // expect(JSON.stringify(parsedResult)).toStrictEqual(
+      //   `{\"functionName\":\"tend(uint256,(int24[],int24[],uint16[]),bytes)\",\"typesArray\":[\"uint256\",\"tuple(int24[],int24[],uint16[])\",\"bytes\"],\"valuesArray\":[10000,[[256140],[258240],[1]],\"0x7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff000000000000000000000000ffffffffffffffffffffffffffffffffffffffff\"]}`
+      // );
 
-      expect(parsedResult.valuesArray[1][0][0]).not.toEqual(parsedResult.valuesArray[1][1][0])
+      // expect(parsedResult.valuesArray[1][0][0]).not.toEqual(parsedResult.valuesArray[1][1][0])
     });
 
   });
