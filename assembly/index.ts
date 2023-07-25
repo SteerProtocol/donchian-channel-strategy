@@ -15,6 +15,7 @@ class Config extends CurvesConfigHelper {
 let configJson: Config = new Config();
 
 export function initialize(config: string): void {
+
   // Parse the config object
   configJson = JSON.parse<Config>(config);
 
@@ -129,18 +130,18 @@ export function config(): string {
       "type": "number",
       "title": "Channel Lookback",
       "description": "Lookback period for channel",
-      "detailedDescription": "Number of candles to use for the channel",
+      "detailedDescription": "Number of candles to use for channel",
       "default": 5
     },
     "multiplier": {
       "type": "number",
       "title": "Channel Multiplier",
-      "description": "Multiplier for channel width",
+      "description": "Multiplier channel width",
       "detailedDescription": "Example: 5% channel width = 1.05",
       "default": 1
     },
     "poolFee": {
-      "description": "Pool fee percent for desired pool",
+      "description": "Pool fee percentages for desired pool",
       "title": "Pool Fee",
       "enum": [
         10000,

@@ -1380,10 +1380,10 @@
     typescript "^4.3.5"
     visitor-as "^0.11.4"
 
-"@steerprotocol/concentrated-liquidity-strategy@0.2.8":
-  version "0.2.8"
-  resolved "https://registry.yarnpkg.com/@steerprotocol/concentrated-liquidity-strategy/-/concentrated-liquidity-strategy-0.2.8.tgz#58c90862593c761ed0fbf5b7b313e7bb54209494"
-  integrity sha512-AAWqb1G0T9EHXIFC+plne5xT3Jcf2brLEMUUERI6zomuvQpSrk9QZ0sw0JoxLTLVIBqqi2+LdYQrAGbwGmxpfg==
+"@steerprotocol/concentrated-liquidity-strategy@0.2.9":
+  version "0.2.9"
+  resolved "https://registry.yarnpkg.com/@steerprotocol/concentrated-liquidity-strategy/-/concentrated-liquidity-strategy-0.2.9.tgz#ec0296bd9716536eeb0af7ed00bb87eb7c2a2917"
+  integrity sha512-509ldcLItzjXBLIwyY52SCpFc+Z3Dks+pS/dsaHeNwjbd6ovGGEk86sthvTEWGQywVuYi6zL4q44tq5SxxbPYg==
   dependencies:
     "@babel/preset-typescript" "^7.14.5"
     "@semantic-release/changelog" "^5.0.1"

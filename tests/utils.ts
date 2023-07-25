@@ -1,11 +1,11 @@
-export const config_payload = `{"period":5,"binWidth":120,"poolFee":3000,"multiplier":1.0}`;
+export const config_payload = `{"lookback":5,"binWidth":120,"poolFee":3000,"multiplier":1.0}`;
 
 export const config = `{
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Strategy Config",
   "type": "object",
   "properties": {
-    "period": {
+    "lookback": {
         "type": "number",
         "description": "Lookback period for channel",
         "default": 5

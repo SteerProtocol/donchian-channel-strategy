@@ -4,7 +4,7 @@
   "description": "AssemblyScript based strategy template for the Steer Protocol",
   "main": "index.js",
   "scripts": {
-    "test": "yarn jest",
+    "test": "yarn asbuild && yarn jest",
     "asbuild:debug": "asc assembly/index.ts --target debug",
     "asbuild:release": "asc assembly/index.ts --target release",
     "asbuild": "npm run asbuild:debug && npm run asbuild:release",
@@ -28,7 +28,7 @@
     "@semantic-release/changelog": "^5.0.1",
     "@semantic-release/git": "^9.0.0",
     "@steerprotocol/base-strategy": "^0.1.0",
-    "@steerprotocol/concentrated-liquidity-strategy": "0.2.8",
+    "@steerprotocol/concentrated-liquidity-strategy": "0.2.9",
     "@steerprotocol/strategy-utils": "^2.2.0",
     "as-bignum": "^0.2.23",
     "commitizen": "^4.2.4",
