@@ -7,6 +7,7 @@ import { StrategyConfig, StrategyType, allOfStrategy, getStrategyEnum } from "./
 import { BollingerConfig, bollingerLogic } from "./bollinger";
 import { KeltnerConfig, keltnerLogic } from "./keltner";
 import { ClassicConfig, classicLogic } from "./classic";
+import { StaticConfig, staticLogic } from "./static";
 
 @json // @Note TriggerConfigHelper extends Curves Library
 
@@ -17,6 +18,8 @@ class Config  {
   standardDeviations: f64 = 0;
   atrLength: u32 = 0;
   placementType: string = "Position over current price";
+  upperBound: i32 = 0;
+  lowerBound: i32 = 0;
   positionSize: i32 = 600;
   elapsedTendTime: i64 = 0;
   poolFee: i32 = 0;                                        // Pool fee
@@ -88,9 +91,10 @@ export function execute(_prices: string, _positions: string, _currentTick: strin
       const bollingerConfigObj = new BollingerConfig(configJson.poolFee, configJson.lookback, configJson.standardDeviations)
       ticks = bollingerLogic(prices, bollingerConfigObj)
       break;
-    // case StrategyType.Stable:
-    //   ticks = stableLogic()
-    //   break;
+    case StrategyType.Static:
+      const staticConfigObj = new StaticConfig(configJson.poolFee, configJson.lowerBound, configJson.upperBound)
+      ticks = staticLogic(staticConfigObj)
+      break;
     case StrategyType.Donchian:
       const donchianConfigObj = new DonchianConfig(configJson.lookback, configJson.multiplier, configJson.binSizeMultiplier, configJson.poolFee)
       ticks = donchianLogic(prices, donchianConfigObj)

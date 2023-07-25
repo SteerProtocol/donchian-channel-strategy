@@ -5,32 +5,57 @@ export const config_payload = `{
   "liquidityShape": "Linear"
 }`;
 
-export const easy_config = `{
+export const classic_config = `{
   "elapsedTendTime": 604800,
-  "triggerStyle": "None",
+  "triggerStyle": "Price moves percentage of active range away",
+  "percentageOfPositionRangeToTrigger": 2
   "strategy": "Classic",
   "liquidityShape": "Linear",
   "poolFee": 3000,
-  "placementType": "Position centered around current price",
+  "placementType": "Position over current price",
   "triggerWhenOver": true,
   "positionSize": 600
 }`
 //Position under current price
 //Position centered around current price
 
+// trigger type
+// linear positions working
+//Price moves one way past positions - works
+// Price set distance - works
+// Price leaves active range - works
+// Price moves percentage of active range away - works
+
 export const bollinger_config = `{
   "elapsedTendTime": 604800,
-  "triggerStyle": "Price leaves active range",
+  "triggerStyle": "Price moves one way past positions",
+  "triggerWhenOver": false,
   "strategy": "Bollinger Band",
   "liquidityShape": "Linear",
   "lookback": 5,
-  "standardDeviations": 2,
-  "multiplier": 1,
-  "atrLength": 10,
+  "standardDeviations": 6,
   "poolFee": 3000,
-  "placementType": "Position centered around current price",
-  "triggerWhenOver": true,
-  "positionSize": 600
+}`
+
+export const keltner_config = `{
+  "elapsedTendTime": 604800,
+  "triggerStyle": "None",
+  "strategy": "Keltner Channel",
+  "liquidityShape": "Linear",
+  "lookback": 12,
+  "atrLength": 12,
+  "multiplier": 5,
+  "poolFee": 500,
+}`
+
+export const donchian_config = `{
+  "elapsedTendTime": 604800,
+  "triggerStyle": "None",
+  "strategy": "Donchian Channel",
+  "liquidityShape": "Linear",
+  "lookback": 12,
+  "multiplier": 1.7,
+  "poolFee": 3000,
 }`
 
 export const config = `{

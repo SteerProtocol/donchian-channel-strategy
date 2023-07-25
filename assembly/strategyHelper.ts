@@ -7,7 +7,7 @@ export const enum StrategyType {
     Donchian,
     Bollinger,
     Keltner,
-    // Stable,
+    Static,
     Classic
 }
 
@@ -18,8 +18,8 @@ export function getStrategyEnum(strategy: string): StrategyType {
       return StrategyType.Bollinger;
   } else if (strategy === 'Keltner Channel') {
       return StrategyType.Keltner;
-  // } else if (strategy === 'Static Stable') {
-  //     return StrategyType.Stable;
+  } else if (strategy === 'Static') {
+      return StrategyType.Static;
   } else {
       return StrategyType.Classic;
   }
@@ -32,8 +32,8 @@ export function getStrategyName(strategy: StrategyType): string {
       return 'Bollinger Band';
   } else if (strategy === StrategyType.Keltner) {
       return 'Keltner Channel';
-  // } else if (strategy === StrategyType.Stable) {
-  //     return 'Static Stable';
+  } else if (strategy === StrategyType.Static) {
+      return 'Static';
   } else {
       return 'Classic';
   }
@@ -46,6 +46,7 @@ export function StrategyConfig(): string {
             "Donchian Channel",
             "Bollinger Band",
             "Keltner Channel",
+            "Static",
             "Classic"
         ],
         "title": "Strategy Type",
@@ -125,6 +126,33 @@ export function allOfStrategy(): string {
           "required": [
             "placementType",
             "positionSize"
+          ]
+        }
+      },
+      {
+        "if": {
+          "properties": {
+            "strategy": {
+              "const": "Stable"
+            }
+          }
+        },
+        "then": {
+          "properties": {
+            "lowerBound": {
+              "title": "Lower Bound",
+              "description": "Lower tick of the static range",
+              "type": "integer"
+            },
+            "upperBound": {
+              "title": "Upper Bound",
+              "description": "Upper tick of the static range",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "lowerBound",
+            "upperBound"
           ]
         }
       }`
