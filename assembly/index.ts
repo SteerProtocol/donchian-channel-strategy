@@ -72,11 +72,11 @@ export function initialize(config: string): void {
   // configJson.poolFee = i32(configJson.poolFee); 
 }
 
-export function execute( _positions: string, _currentTick: string, _timeSinceLastExecution: string): string {
+export function execute( _positions: string, _currentTick: string): string {
   // HANDLE TRIGGER LOGIC
-  const trigger = getTriggerStyle(configJson.triggerStyle)
-  const triggerObj = new TriggerConfigHelper(configJson.triggerWhenOver, configJson.tickPriceTrigger, configJson.percentageOfPositionRangeToTrigger, configJson.tickDistanceFromCenter, configJson.elapsedTendTime)
-  if (!shouldTriggerExecution(trigger, triggerObj, _positions, _currentTick, _timeSinceLastExecution)) return 'continue'
+  // const trigger = getTriggerStyle(configJson.triggerStyle)
+  // const triggerObj = new TriggerConfigHelper(configJson.triggerWhenOver, configJson.tickPriceTrigger, configJson.percentageOfPositionRangeToTrigger, configJson.tickDistanceFromCenter, configJson.elapsedTendTime)
+  // if (!shouldTriggerExecution(trigger, triggerObj, _positions, _currentTick, _timeSinceLastExecution)) return 'continue'
 
   // Get strat range
   let ticks: i64[] = []
@@ -135,37 +135,39 @@ export function execute( _positions: string, _currentTick: string, _timeSinceLas
   const upperTick = i32(closestDivisibleNumber(f64(currentTick + tickSpread), tickSpacing, false))
 
   // Get type of curve
-  const curveType = stringToPositionStyle(configJson.liquidityShape)
+  // const curveType = stringToPositionStyle(configJson.liquidityShape)
   // Calculate positions
-  const binWidth = i32(f32(getTickSpacing(configJson.poolFee)) * configJson.binSizeMultiplier);
-  const positions = PositionGenerator.applyLiquidityShape(f64(upperTick), f64(lowerTick),
-  {
-      // ExponentialDecayOptions
-  rate: configJson.rate,
-  // NormalOptions
-  mean: configJson.mean,
-  stdDev:  configJson.stdDev,
-  // SigmoidOptions
-  k:  configJson.k,
-  // LogarithmicOptions
-  base:  configJson.base, 
-  // PowerLawOptions
-  exponent:  configJson.exponent, 
-  // StepOptions
-  threshold:  configJson.threshold,
-  // SineOptions
-  amplitude:  configJson.amplitude,
-  frequency: configJson.frequency,
-  phase:  configJson.phase,
-  // TriangleOptions
-  period:  f64(configJson.period), // note overloaded var, @todo
-  // QuadraticOptions
-  a:  configJson.a,
-  b:  configJson.b,
-  c:  configJson.c, 
-  // CubicOptions
-  d:  configJson.d
-  }, binWidth, curveType);
+  // const binWidth = i32(f32(getTickSpacing(configJson.poolFee)) * configJson.binSizeMultiplier);
+  const positions: Position[] = []
+  positions.push(new Position(lowerTick, upperTick, 100))
+  // const positions = PositionGenerator.applyLiquidityShape(f64(upperTick), f64(lowerTick),
+  // {
+  //     // ExponentialDecayOptions
+  // rate: configJson.rate,
+  // // NormalOptions
+  // mean: configJson.mean,
+  // stdDev:  configJson.stdDev,
+  // // SigmoidOptions
+  // k:  configJson.k,
+  // // LogarithmicOptions
+  // base:  configJson.base, 
+  // // PowerLawOptions
+  // exponent:  configJson.exponent, 
+  // // StepOptions
+  // threshold:  configJson.threshold,
+  // // SineOptions
+  // amplitude:  configJson.amplitude,
+  // frequency: configJson.frequency,
+  // phase:  configJson.phase,
+  // // TriangleOptions
+  // period:  f64(configJson.period), // note overloaded var, @todo
+  // // QuadraticOptions
+  // a:  configJson.a,
+  // b:  configJson.b,
+  // c:  configJson.c, 
+  // // CubicOptions
+  // d:  configJson.d
+  // }, binWidth, curveType);
   // Format and return result
   return renderULMResult(positions, 10000);
 }
@@ -193,49 +195,88 @@ export function config(): string {
         "0.01%"
       ]
     },
-    "elapsedTendTime": {
-      "title": "Max Time Without Executing",
-      "description": "Regardless of the new position trigger conditions, the strategy will execute if this amount of time has elapsed.",
-      "type": "integer",
-      "default": 604800
-    },
     "spreadPercentage": {
       "title": "Position price spread from current price",
       "description": "The tick spread up and down applied from the current tick",
       "detailedDescription": "Inputting 0.25 will create a position covering roughly 25% above and below the current price.",
       "default": 0.25,
       "type": "number"
-    },
-    ${triggerPropertyHelper()},
-    ${PositionGenerator.propertyHelper([
-        PositionStyle.Normalized,
-        PositionStyle.Absolute,
-        // PositionStyle.Linear, // We always want linear
-        PositionStyle.Sigmoid,
-        PositionStyle.PowerLaw,
-        PositionStyle.Step,
-        // PositionStyle.Sine,
-        PositionStyle.Triangle,
-        PositionStyle.Quadratic,
-        PositionStyle.Cubic,
-        // PositionStyle.ExponentialDecay,
-        // PositionStyle.ExponentialGrowth,
-        // PositionStyle.Logarithmic,
-        // PositionStyle.LogarithmicDecay,
-        PositionStyle.Sawtooth,
-        PositionStyle.SquareWave
-    ])}
+    }
   },
   "allOf": [
-    ${PositionGenerator.allOf()},
-    ${allOfTrigger()}
   ],
   "required": [
-    "spreadPercentage",
-    "elapsedTendTime"
+    "spreadPercentage"
   ]
 }`;
 }
+
+// export function config(): string {
+//   return `{
+//   "$schema": "http://json-schema.org/draft-07/schema#",
+//   "title": "Strategy Config",
+//   "type": "object",
+//   "expectedDataTypes": ["Liquidity Manager Positions", "V3 Pool Current Tick", "Time Since Last Execution"],
+//   "properties": {
+//     "poolFee": {
+//       "description": "Pool fee percent for desired pool",
+//       "title": "Pool Fee",
+//       "enum": [
+//         10000,
+//         3000,
+//         500,
+//         100
+//       ],
+//       "enumNames": [
+//         "1%",
+//         "0.3%",
+//         "0.05%",
+//         "0.01%"
+//       ]
+//     },
+//     "elapsedTendTime": {
+//       "title": "Max Time Without Executing",
+//       "description": "Regardless of the new position trigger conditions, the strategy will execute if this amount of time has elapsed.",
+//       "type": "integer",
+//       "default": 604800
+//     },
+//     "spreadPercentage": {
+//       "title": "Position price spread from current price",
+//       "description": "The tick spread up and down applied from the current tick",
+//       "detailedDescription": "Inputting 0.25 will create a position covering roughly 25% above and below the current price.",
+//       "default": 0.25,
+//       "type": "number"
+//     },
+//     ${triggerPropertyHelper()},
+//     ${PositionGenerator.propertyHelper([
+//         PositionStyle.Normalized,
+//         PositionStyle.Absolute,
+//         // PositionStyle.Linear, // We always want linear
+//         PositionStyle.Sigmoid,
+//         PositionStyle.PowerLaw,
+//         PositionStyle.Step,
+//         // PositionStyle.Sine,
+//         PositionStyle.Triangle,
+//         PositionStyle.Quadratic,
+//         PositionStyle.Cubic,
+//         // PositionStyle.ExponentialDecay,
+//         // PositionStyle.ExponentialGrowth,
+//         // PositionStyle.Logarithmic,
+//         // PositionStyle.LogarithmicDecay,
+//         PositionStyle.Sawtooth,
+//         PositionStyle.SquareWave
+//     ])}
+//   },
+//   "allOf": [
+//     ${PositionGenerator.allOf()},
+//     ${allOfTrigger()}
+//   ],
+//   "required": [
+//     "spreadPercentage",
+//     "elapsedTendTime"
+//   ]
+// }`;
+// }
 
 export function version(): i32 {
   return 1;
