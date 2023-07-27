@@ -2,12 +2,12 @@ import { CurvesConfigHelper, PositionGenerator, stringToPositionStyle, getTickFr
 import { console, Candle, SlidingWindow, parseCandles, Position, closestDivisibleNumber } from "@steerprotocol/strategy-utils/assembly";
 import { JSON } from "json-as/assembly";
 import { TriggerConfigHelper, TriggerStyle, allOfTrigger, getTriggerStyle, shouldTriggerExecution, triggerFromDistance, triggerPropertyHelper } from "./triggers";
-import { DonchianConfig, donchianLogic } from "./donchian";
-import { StrategyConfig, StrategyType, allOfStrategy, getStrategyEnum } from "./strategyHelper";
-import { BollingerConfig, bollingerLogic } from "./bollinger";
-import { KeltnerConfig, keltnerLogic } from "./keltner";
-import { ClassicConfig, classicLogic } from "./classic";
-import { StaticConfig, staticLogic } from "./static";
+// import { DonchianConfig, donchianLogic } from "./donchian";
+// import { StrategyConfig, StrategyType, allOfStrategy, getStrategyEnum } from "./strategyHelper";
+// import { BollingerConfig, bollingerLogic } from "./bollinger";
+// import { KeltnerConfig, keltnerLogic } from "./keltner";
+// import { ClassicConfig, classicLogic, getClassicConfig } from "./classic";
+// import { StaticConfig, staticLogic } from "./static";
 
 @json // @Note TriggerConfigHelper extends Curves Library
 
@@ -17,16 +17,17 @@ class Config  {
   binSizeMultiplier: f32 = 0;                              // Multiplier for the minimum tick spacing (Creates the position width)
   standardDeviations: f64 = 0;
   atrLength: u32 = 0;
-  placementType: string = "Position over current price";
-  upperBound: i32 = 0;
-  lowerBound: i32 = 0;
+  // placementType: string = "Position over current price";
+  // upperBound: i32 = 0;
+  // lowerBound: i32 = 0;
   positionSize: i32 = 600;
   elapsedTendTime: i64 = 0;
   poolFee: i32 = 0;                                        // Pool fee
   liquidityShape: string = 'Absolute';                      // Liquidity style
   triggerStyle: string = 'None'
-  strategy: string = 'Bollinger Band'
+  // strategy: string = 'Bollinger Band'
   // trigger
+  spreadPercentage: f64 = 0.0;
   triggerWhenOver: boolean = false;
   tickPriceTrigger: i64 = 0;
   percentageOfPositionRangeToTrigger: f64 = 0.0;
@@ -71,13 +72,7 @@ export function initialize(config: string): void {
   // configJson.poolFee = i32(configJson.poolFee); 
 }
 
-export function execute(_prices: string, _positions: string, _currentTick: string, _timeSinceLastExecution: string): string {
-  // _prices will have the results of the dc, which is only candles here
-  const prices = parseCandles(_prices);
-  // If we have no candles, skip action
-  if (prices.length == 0) {
-    return 'continue';
-  }
+export function execute( _positions: string, _currentTick: string, _timeSinceLastExecution: string): string {
   // HANDLE TRIGGER LOGIC
   const trigger = getTriggerStyle(configJson.triggerStyle)
   const triggerObj = new TriggerConfigHelper(configJson.triggerWhenOver, configJson.tickPriceTrigger, configJson.percentageOfPositionRangeToTrigger, configJson.tickDistanceFromCenter, configJson.elapsedTendTime)
@@ -85,38 +80,59 @@ export function execute(_prices: string, _positions: string, _currentTick: strin
 
   // Get strat range
   let ticks: i64[] = []
-  const strategyType = getStrategyEnum(configJson.strategy)
-  switch (strategyType) {
-    case StrategyType.Bollinger:
-      const bollingerConfigObj = new BollingerConfig(configJson.poolFee, configJson.lookback, configJson.standardDeviations)
-      ticks = bollingerLogic(prices, bollingerConfigObj)
-      break;
-    case StrategyType.Static:
-      const staticConfigObj = new StaticConfig(configJson.poolFee, configJson.lowerBound, configJson.upperBound)
-      ticks = staticLogic(staticConfigObj)
-      break;
-    case StrategyType.Donchian:
-      const donchianConfigObj = new DonchianConfig(configJson.lookback, configJson.multiplier, configJson.binSizeMultiplier, configJson.poolFee)
-      ticks = donchianLogic(prices, donchianConfigObj)
-      break;
-    case StrategyType.Keltner:
-      const keltnerConfigObj = new KeltnerConfig(configJson.lookback, configJson.atrLength, configJson.multiplier, configJson.poolFee)
-      ticks = keltnerLogic(prices, keltnerConfigObj)
-      break
+  // let prices: Array<Candle> = []
+  // const strategyType = getStrategyEnum(configJson.strategy)
+  // switch (strategyType) {
+  //   case StrategyType.Bollinger:
+  //     // _prices will have the results of the dc, which is only candles here
+  //     prices = parseCandles(_prices);
+  //     // If we have no candles, skip action
+  //     if (prices.length == 0) {
+  //       return 'continue';
+  //     }
+  //     const bollingerConfigObj = new BollingerConfig(configJson.poolFee, configJson.lookback, configJson.standardDeviations)
+  //     ticks = bollingerLogic(prices, bollingerConfigObj)
+  //     break;
+  //   // case StrategyType.Static:
+  //   //   const staticConfigObj = new StaticConfig(configJson.poolFee, configJson.lowerBound, configJson.upperBound)
+  //   //   ticks = staticLogic(staticConfigObj)
+  //   //   break;
+  //   case StrategyType.Donchian:
+  //     prices = parseCandles(_prices);
+  //     // If we have no candles, skip action
+  //     if (prices.length == 0) {
+  //       return 'continue';
+  //     }
+  //     const donchianConfigObj = new DonchianConfig(configJson.lookback, configJson.multiplier, configJson.binSizeMultiplier, configJson.poolFee)
+  //     ticks = donchianLogic(prices, donchianConfigObj)
+  //     break;
+  //   case StrategyType.Keltner:
+  //     prices = parseCandles(_prices);
+  //     // If we have no candles, skip action
+  //     if (prices.length == 0) {
+  //       return 'continue';
+  //     }
+  //     const keltnerConfigObj = new KeltnerConfig(configJson.lookback, configJson.atrLength, configJson.multiplier, configJson.poolFee)
+  //     ticks = keltnerLogic(prices, keltnerConfigObj)
+  //     break
   
-    default:
-      const currentTick = i64(parseInt(_currentTick))
-      if (!currentTick) throw new Error("Err on current tick");
-      // return configJson.positionSize.toString()
-      const classicConfigObj = new ClassicConfig(configJson.placementType, configJson.positionSize, configJson.poolFee)
-      ticks = classicLogic(currentTick, classicConfigObj)
-      break;
-  }
-  // @todo
-  // return (ticks.toString())
+  //   default:
+  const currentTick = i64(parseInt(_currentTick))
+  // return configJson.positionSize.toString()
+  // const classicConfigObj = new ClassicConfig(configJson.placementType, configJson.positionSize, configJson.poolFee)
+  // ticks = classicLogic(currentTick, classicConfigObj)
   
-  const lowerTick = ticks[0];
-  const upperTick = ticks[1];
+  //=============
+  // get variance
+  const tickSpread = i64(Math.round(configJson.spreadPercentage * 10000))
+  const tickSpacing = getTickSpacing(i32(configJson.poolFee))
+  // let lowerTick: i32 = 0;
+  // let upperTick: i32 = 0;
+  // if (currentTick == 0) {
+  //   lowerTick = 
+  // }
+  const lowerTick = i32(closestDivisibleNumber(f64(currentTick - tickSpread), tickSpacing, true))
+  const upperTick = i32(closestDivisibleNumber(f64(currentTick + tickSpread), tickSpacing, false))
 
   // Get type of curve
   const curveType = stringToPositionStyle(configJson.liquidityShape)
@@ -159,7 +175,7 @@ export function config(): string {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Strategy Config",
   "type": "object",
-  "expectedDataTypes": ["OHLC", "Liquidity Manager Positions", "V3 Pool Current Tick", "Time Since Last Execution"],
+  "expectedDataTypes": ["Liquidity Manager Positions", "V3 Pool Current Tick", "Time Since Last Execution"],
   "properties": {
     "poolFee": {
       "description": "Pool fee percent for desired pool",
@@ -183,8 +199,14 @@ export function config(): string {
       "type": "integer",
       "default": 604800
     },
+    "spreadPercentage": {
+      "title": "Position price spread from current price",
+      "description": "The tick spread up and down applied from the current tick",
+      "detailedDescription": "Inputting 0.25 will create a position covering roughly 25% above and below the current price.",
+      "default": 0.25,
+      "type": "number"
+    },
     ${triggerPropertyHelper()},
-    ${StrategyConfig()},
     ${PositionGenerator.propertyHelper([
         PositionStyle.Normalized,
         PositionStyle.Absolute,
@@ -206,8 +228,11 @@ export function config(): string {
   },
   "allOf": [
     ${PositionGenerator.allOf()},
-    ${allOfTrigger()},
-    ${allOfStrategy()}
+    ${allOfTrigger()}
+  ],
+  "required": [
+    "spreadPercentage",
+    "elapsedTendTime"
   ]
 }`;
 }

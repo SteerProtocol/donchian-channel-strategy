@@ -1,0 +1,578 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Strategy Config",
+  "type": "object",
+  "expectedDataTypes": ["Liquidity Manager Positions", "V3 Pool Current Tick", "Time Since Last Execution"],
+  "properties": {
+    "poolFee": {
+      "description": "Pool fee percent for desired pool",
+      "title": "Pool Fee",
+      "enum": [
+        10000,
+        3000,
+        500,
+        100
+      ],
+      "enumNames": [
+        "1%",
+        "0.3%",
+        "0.05%",
+        "0.01%"
+      ]
+    },
+    "elapsedTendTime": {
+      "title": "Max Time Without Executing",
+      "description": "Regardless of the new position trigger conditions, the strategy will execute if this amount of time has elapsed.",
+      "type": "integer",
+      "default": 604800
+    },
+    "spreadPercentage": {
+      "title": "Position price spread from current price",
+      "description": "The tick spread up and down applied from the current tick",
+      "detailedDescription": "Inputting 0.25 will create a position covering roughly 25% above and below the current price.",
+      "default": 0.25,
+      "type": "number"
+    }
+    "triggerStyle": {
+      "enum": ["Current Price set distance from center of positions","Price leaves active range","Price moves percentage of active range away","Price moves one way past positions","None"],
+      "title": "Logic to trigger new positions",
+      "type": "string",
+      "default": "None"
+    },
+    "liquidityShape": {
+      "enum": ["Linear","ExponentialDecay","Logarithmic","Sine","ExponentialGrowth","LogarithmicDecay"],
+      "title": "Liquidity Shape",
+      "type": "string",
+      "default": "Linear"
+    }
+  },
+  "allOf": [
+    {
+    "if": {
+      "properties": {
+        "liquidityShape": {
+          "const": "Linear"
+        }
+      }
+    },
+    "then": {
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "if": {
+      "properties": {
+        "liquidityShape": {
+          "const": "Normalized"
+        }
+      }
+    },
+    "then": {
+      "properties": {
+        "binSizeMultiplier": {
+          "type": "number",
+          "title": "Position Scale"
+        },
+        "mean": {
+          "type": "number",
+          "title": "Mean"
+        },
+        "stdDev": {
+          "type": "number",
+          "title": "Standard Deviation"
+        }
+      },
+      "required": [
+        "binSizeMultiplier",
+        "mean",
+        "stdDev"
+      ]
+    }
+  },
+  {
+    "if": {
+      "properties": {
+        "liquidityShape": {
+          "const": "ExponentialDecay"
+        }
+      }
+    },
+    "then": {
+      "properties": {
+        "rate": {
+          "type": "number",
+          "title": "Rate",
+          "description": "Rate of decay",
+          "detailedDescription": "The higher the rate, the faster the decay."
+        }
+      },
+      "required": [
+        "rate"
+      ]
+    }
+  },
+  {
+    "if": {
+      "properties": {
+        "liquidityShape": {
+          "const": "Sigmoid"
+        }
+      }
+    },
+    "then": {
+      "properties": {
+        "binSizeMultiplier": {
+          "type": "number",
+          "title": "Position Scale"
+        },
+        "k": {
+          "type": "number",
+          "title": "K"
+        }
+      },
+      "required": [
+        "binSizeMultiplier",
+        "k"
+      ]
+    }
+  },
+  {
+    "if": {
+      "properties": {
+        "liquidityShape": {
+          "const": "Logarithmic"
+        }
+      }
+    },
+    "then": {
+      "properties": {
+        "binSizeMultiplier": {
+          "type": "number",
+          "title": "Position Scale"
+        },
+        "base": {
+          "type": "number",
+          "title": "Base"
+        }
+      },
+      "required": [
+        "binSizeMultiplier",
+        "base"
+      ]
+    }
+  },
+  {
+    "if": {
+      "properties": {
+        "liquidityShape": {
+          "const": "PowerLaw"
+        }
+      }
+    },
+    "then": {
+      "properties": {
+        "binSizeMultiplier": {
+          "type": "number",
+          "title": "Position Scale"
+        },
+        "exponent": {
+          "type": "number",
+          "title": "Exponent"
+        }
+      },
+      "required": [
+        "binSizeMultiplier",
+        "exponent"
+      ]
+    }
+  },
+  {
+    "if": {
+      "properties": {
+        "liquidityShape": {
+          "const": "Step"
+        }
+      }
+    },
+    "then": {
+      "properties": {
+        "binSizeMultiplier": {
+          "type": "number",
+          "title": "Position Scale"
+        },
+        "threshold": {
+          "type": "number",
+          "title": "Threshold"
+        }
+      },
+      "required": [
+        "binSizeMultiplier",
+        "threshold"
+      ]
+    }
+  },
+  {
+    "if": {
+      "properties": {
+        "liquidityShape": {
+          "const": "Sine"
+        }
+      }
+    },
+    "then": {
+      "properties": {
+        "binSizeMultiplier": {
+          "type": "number",
+          "title": "Position Scale"
+        },
+        "amplitude": {
+          "type": "number",
+          "title": "Amplitude"
+        },
+        "frequency": {
+          "type": "number",
+          "title": "Frequency"
+        },
+        "phase": {
+          "type": "number",
+          "title": "Phase"
+        }
+      },
+      "required": [
+        "binSizeMultiplier",
+        "amplitude",
+        "frequency",
+        "phase"
+      ]
+    }
+  },
+  {
+    "if": {
+      "properties": {
+        "liquidityShape": {
+          "const": "Triangle"
+        }
+      }
+    },
+    "then": {
+      "properties": {
+        "binSizeMultiplier": {
+          "type": "number",
+          "title": "Position Scale"
+        },
+        "amplitude": {
+          "type": "number",
+          "title": "Amplitude"
+        },
+        "period": {
+          "type": "number",
+          "title": "Period"
+        },
+        "phase": {
+          "type": "number",
+          "title": "Phase"
+        }
+      },
+      "required": [
+        "binSizeMultiplier",
+        "amplitude",
+        "period",
+        "phase"
+      ]
+    }
+  },
+  {
+    "if": {
+      "properties": {
+        "liquidityShape": {
+          "const": "Quadratic"
+        }
+      }
+    },
+    "then": {
+      "properties": {
+        "binSizeMultiplier": {
+          "type": "number",
+          "title": "Position Scale"
+        },
+        "a": {
+          "type": "number",
+          "title": "A"
+        },
+        "b": {
+          "type": "number",
+          "title": "B"
+        },
+        "c": {
+          "type": "number",
+          "title": "C"
+        }
+      },
+      "required": [
+        "binSizeMultiplier",
+        "a",
+        "b",
+        "c"
+      ]
+    }
+  },
+  {
+    "if": {
+      "properties": {
+        "liquidityShape": {
+          "const": "Cubic"
+        }
+      }
+    },
+    "then": {
+      "properties": {
+        "binSizeMultiplier": {
+          "type": "number",
+          "title": "Position Scale"
+        },
+        "a": {
+          "type": "number",
+          "title": "A"
+        },
+        "b": {
+          "type": "number",
+          "title": "B"
+        },
+        "c": {
+          "type": "number",
+          "title": "C"
+        },
+        "d": {
+          "type": "number",
+          "title": "D"
+        }
+      },
+      "required": [
+        "binSizeMultiplier",
+        "a",
+        "b",
+        "c",
+        "d"
+      ]
+    }
+  },
+  {
+    "if": {
+      "properties": {
+        "liquidityShape": {
+          "const": "ExponentialGrowth"
+        }
+      }
+    },
+    "then": {
+      "properties": {
+        "binSizeMultiplier": {
+          "type": "number",
+          "title": "Position Scale"
+        },
+        "rate": {
+          "type": "number",
+          "title": "Rate"
+        }
+      },
+      "required": [
+        "binSizeMultiplier",
+        "rate"
+      ]
+    }
+  },
+  {
+    "if": {
+      "properties": {
+        "liquidityShape": {
+          "const": "LogarithmicDecay"
+        }
+      }
+    },
+    "then": {
+      "properties": {
+        "binSizeMultiplier": {
+          "type": "number",
+          "title": "Position Scale"
+        },
+        "rate": {
+          "type": "number",
+          "title": "Rate"
+        },
+        "base": {
+          "type": "number",
+          "title": "Base"
+        }
+      },
+      "required": [
+        "binSizeMultiplier",
+        "rate",
+        "base"
+      ]
+    }
+  },
+  {
+    "if": {
+      "properties": {
+        "liquidityShape": {
+          "const": "Sawtooth"
+        }
+      }
+    },
+    "then": {
+      "properties": {
+        "binSizeMultiplier": {
+          "type": "number",
+          "title": "Position Scale"
+        },
+        "amplitude": {
+          "type": "number",
+          "title": "Amplitude"
+        },
+        "period": {
+          "type": "number",
+          "title": "Period"
+        },
+        "phase": {
+          "type": "number",
+          "title": "Phase"
+        }
+      },
+      "required": [
+        "binSizeMultiplier",
+        "amplitude",
+        "period",
+        "phase"
+      ]
+    }
+  },
+  {
+    "if": {
+      "properties": {
+        "liquidityShape": {
+          "const": "SquareWave"
+        }
+      }
+    },
+    "then": {
+      "properties": {
+        "binSizeMultiplier": {
+          "type": "number",
+          "title": "Position Scale"
+        },
+        "amplitude": {
+          "type": "number",
+          "title": "Amplitude"
+        },
+        "period": {
+          "type": "number",
+          "title": "Period"
+        },
+        "phase": {
+          "type": "number",
+          "title": "Phase"
+        }
+      },
+      "required": [
+        "binSizeMultiplier",
+        "amplitude",
+        "period",
+        "phase"
+      ]
+    }
+  },
+  {
+    "required": [
+      "liquidityShape"
+    ]
+  },
+    {
+    "if": {
+      "properties": {
+        "triggerStyle": {
+          "const": "None"
+        }
+      }
+    },
+    "then": {
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "if": {
+      "properties": {
+        "triggerStyle": {
+          "const": "Current Price set distance from center of positions"
+        }
+      }
+    },
+    "then": {
+      "properties": {
+        "tickDistanceFromCenter": {
+            "type": "integer",
+            "title": "Tick Distance",
+            "description": "The number of ticks (basis points) from center price of positions to trigger setting new positions"
+        }
+      },
+      "required": ["tickDistanceFromCenter"]
+    }
+  },
+  {
+    "if": {
+      "properties": {
+        "triggerStyle": {
+          "const": "Price leaves active range"
+        }
+      }
+    },
+    "then": {
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "if": {
+      "properties": {
+        "triggerStyle": {
+          "const": "Price moves percentage of active range away"
+        }
+      }
+    },
+    "then": {
+      "properties": {
+        "percentageOfPositionRangeToTrigger": {
+            "type": "number",
+            "title": "Percentage of Range",
+            "description": "The percentage of the range away to trigger new positions, 100% or 1 would be at the bounds of the range"
+        }
+      },
+      "required": ["percentageOfPositionRangeToTrigger"]
+    }
+  },
+  {
+    "if": {
+      "properties": {
+        "triggerStyle": {
+          "const": "Price moves one way past positions"
+        }
+      }
+    },
+    "then": {
+      "properties": {
+        "triggerWhenOver": {
+            "type": "boolean",
+            "title": "Price Moves Higher",
+            "description": "True for if the strategy should set new positions when the price (tick) is higher than the current positions, false for lower"
+        }
+      },
+      "required": ["triggerWhenOver"]
+    }
+  }
+  ],
+  "required": [
+    "spreadPercentage",
+    "elapsedTendTime"
+  ]
+}

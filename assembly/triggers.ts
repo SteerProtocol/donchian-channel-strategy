@@ -1,8 +1,11 @@
-import { CurvesConfigHelper } from "@steerprotocol/concentrated-liquidity-strategy/assembly";
 import { Position } from "@steerprotocol/strategy-utils/assembly";
 import { JSON } from "json-as";
 
 // NOTE: Trigger functions return true when action should be taken, if false then the strategy can return 'continue' to skip exeuction
+// Implementation might look like the following:
+  // const trigger = getTriggerStyle(configJson.triggerStyle)
+  // const triggerObj = new TriggerConfigHelper(configJson.triggerWhenOver, configJson.tickPriceTrigger, configJson.percentageOfPositionRangeToTrigger, configJson.tickDistanceFromCenter, configJson.elapsedTendTime)
+  // if (!shouldTriggerExecution(trigger, triggerObj, _positions, _currentTick, _timeSinceLastExecution)) return 'continue'
 
 // Gets active range from the output of LM.getPositions()
 export function parseActiveRange(_positions: string): Position {
@@ -77,10 +80,10 @@ export function triggerPricePastPositions(currentPosition: Position, currentTick
     if (emptyCurrentPosition(currentPosition)) return true
     if (triggerOver) {
         // if the currentTick is over the endTick, rebal
-        return currentTick > currentPosition.endTick
+        return currentTick > i64(currentPosition.endTick)
     }
     // if current tick is under start tick
-    return currentTick < currentPosition.startTick
+    return currentTick < i64(currentPosition.startTick)
 }
 
 export const enum TriggerStyle {
