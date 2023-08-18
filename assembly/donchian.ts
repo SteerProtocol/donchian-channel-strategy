@@ -43,7 +43,7 @@ export function donchianLogic(prices: Candle[], configJson: DonchianConfig): i64
 
   }
   
-  function formatTick(expandedUpperLimit: number, expandedLowerLimit: number, poolFee: number): i64[] {
+  export function formatTick(expandedUpperLimit: number, expandedLowerLimit: number, poolFee: number): i64[] {
     const upperTick = i64(closestDivisibleNumber(i32(Math.round(getTickFromPrice(f32(expandedUpperLimit)))), getTickSpacing(i32(poolFee)), false));
     const lowerTick = i64(closestDivisibleNumber(i32(Math.round(getTickFromPrice(f32(expandedLowerLimit)))), getTickSpacing(i32(poolFee)), true));
     return [ upperTick, lowerTick ];

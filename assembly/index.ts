@@ -1,66 +1,70 @@
-import { CurvesConfigHelper, PositionGenerator, stringToPositionStyle, getTickFromPrice, getTickSpacing, renderULMResult, PositionStyle } from "@steerprotocol/concentrated-liquidity-strategy/assembly";
+import { CurvesConfigHelper, getTickFromPrice, getTickSpacing, renderULMResult } from "@steerprotocol/concentrated-liquidity-strategy/assembly";
 import { console, Candle, SlidingWindow, parseCandles, Position, closestDivisibleNumber } from "@steerprotocol/strategy-utils/assembly";
 import { JSON } from "json-as/assembly";
-import { TriggerConfigHelper, TriggerStyle, allOfTrigger, getTriggerStyle, shouldTriggerExecution, triggerFromDistance, triggerPropertyHelper } from "./triggers";
-import { DonchianConfig, donchianLogic } from "./donchian";
-import { StrategyConfig, StrategyType, allOfStrategy, getStrategyEnum } from "./strategyHelper";
-import { BollingerConfig, bollingerLogic } from "./bollinger";
-import { KeltnerConfig, keltnerLogic } from "./keltner";
-import { ClassicConfig, classicLogic } from "./classic";
-import { StaticConfig, staticLogic } from "./static";
+import { TriggerConfigHelper, TriggerStyle, allOfTrigger, getTriggerStyle, shouldTriggerExecution, triggerFromDistance, triggerPropertyHelper } from "@steerprotocol/strategy-utils/assembly/utils/triggers";
+import { DonchianConfig, donchianChannel, donchianLogic, expandChannel, formatTick } from "./donchian";
+import { PositionStyle, stringToPositionStyle } from "@steerprotocol/concentrated-liquidity-strategy/assembly";
+import { PositionGenerator } from "@steerprotocol/concentrated-liquidity-strategy/assembly";
 
+// @ts-ignore
 @json // @Note TriggerConfigHelper extends Curves Library
 
 class Config  {
   lookback: i32 = 0;                                       // Lookback period for the donchian channel
   multiplier: f32 = 0;                                     // Multiplier for the channel width
   binSizeMultiplier: f32 = 0;                              // Multiplier for the minimum tick spacing (Creates the position width)
-  standardDeviations: f64 = 0;
-  atrLength: u32 = 0;
-  placementType: string = "Position over current price";
-  upperBound: i32 = 0;
-  lowerBound: i32 = 0;
-  positionSize: i32 = 600;
-  elapsedTendTime: i64 = 0;
-  poolFee: i32 = 0;                                        // Pool fee
-  liquidityShape: string = 'Absolute';                      // Liquidity style
-  triggerStyle: string = 'None'
-  strategy: string = 'Bollinger Band'
-  // trigger
+  poolFee: i32 = 0;
+
+  //
+  triggerStyle: string = ''
   triggerWhenOver: boolean = false;
   tickPriceTrigger: i64 = 0;
   percentageOfPositionRangeToTrigger: f64 = 0.0;
   tickDistanceFromCenter: i64 = 0;
+  elapsedTendTime: i64 = 0;
+  //
+  //
+  //
+  liquidityShape: string = 'Absolute';
+  // no absolute
+reflect: boolean = false;
+invert: boolean = false;
+  // most options
+  bins: i32 = 0;
+  // Triangle
   // active curve
-    // ExponentialDecayOptions
-    rate: f64 = 0;
-    // NormalOptions
-    mean: f64 = 0;
-    stdDev: f64 = 0;
-    // SigmoidOptions
-    k: f64 = 0;
-    // LogarithmicOptions
-    base: f64 = 0;
-    // PowerLawOptions
-    exponent: f64 = 0;
-    // StepOptions
-    threshold: f64 = 0;
-    // SineOptions
-    amplitude: f64 = 0;
-    frequency: f64 = 0;
-    phase: f64 = 0;
-    // TriangleOptions
-    period: f64 = 0;
-    // QuadraticOptions
-    a: f64 = 0;
-    b: f64 = 0;
-    c: f64 = 0;
-    // CubicOptions
-    d: f64 = 0;
+  // ExponentialDecayOptions
+  // rate: f64 = 0;
+  // NormalOptions
+  mean: f64 = 0;
+  stdDev: f64 = 0;
+  // SigmoidOptions
+  k: f64 = 0;
+  // LogarithmicOptions
+  base: f64 = 0;
+  // // PowerLawOptions
+  exponent: f64 = 0;
+  // StepOptions
+  threshold: f64 = 0;
+  // SineOptions
+  amplitude: f64 = 0;
+  frequency: f64 = 0;
+  phase: f64 = 0;
+  // TriangleOptions
+  period: f64 = 0;
+  // QuadraticOptions
+  a: f64 = 0;
+  b: f64 = 0;
+  c: f64 = 0;
+  // CubicOptions
+  d: f64 = 0;
+
+
 }
 
 // 
 let configJson: Config = new Config();
+const strategyDataConnectors = ["OHLC"]
 
 export function initialize(config: string): void {
   // Parse the config object
@@ -79,77 +83,76 @@ export function execute(_prices: string, _positions: string, _currentTick: strin
     return 'continue';
   }
   // HANDLE TRIGGER LOGIC
-  const trigger = getTriggerStyle(configJson.triggerStyle)
-  const triggerObj = new TriggerConfigHelper(configJson.triggerWhenOver, configJson.tickPriceTrigger, configJson.percentageOfPositionRangeToTrigger, configJson.tickDistanceFromCenter, configJson.elapsedTendTime)
-  if (!shouldTriggerExecution(trigger, triggerObj, _positions, _currentTick, _timeSinceLastExecution)) return 'continue'
+  const triggerObj: TriggerConfigHelper = new TriggerConfigHelper(
+    configJson.triggerWhenOver,
+    configJson.tickPriceTrigger,
+    configJson.percentageOfPositionRangeToTrigger,
+    configJson.tickDistanceFromCenter,
+    configJson.elapsedTendTime
+    )
 
-  // Get strat range
-  let ticks: i64[] = []
-  const strategyType = getStrategyEnum(configJson.strategy)
-  switch (strategyType) {
-    case StrategyType.Bollinger:
-      const bollingerConfigObj = new BollingerConfig(configJson.poolFee, configJson.lookback, configJson.standardDeviations)
-      ticks = bollingerLogic(prices, bollingerConfigObj)
-      break;
-    case StrategyType.Static:
-      const staticConfigObj = new StaticConfig(configJson.poolFee, configJson.lowerBound, configJson.upperBound)
-      ticks = staticLogic(staticConfigObj)
-      break;
-    case StrategyType.Donchian:
-      const donchianConfigObj = new DonchianConfig(configJson.lookback, configJson.multiplier, configJson.binSizeMultiplier, configJson.poolFee)
-      ticks = donchianLogic(prices, donchianConfigObj)
-      break;
-    case StrategyType.Keltner:
-      const keltnerConfigObj = new KeltnerConfig(configJson.lookback, configJson.atrLength, configJson.multiplier, configJson.poolFee)
-      ticks = keltnerLogic(prices, keltnerConfigObj)
-      break
-  
-    default:
-      const currentTick = i64(parseInt(_currentTick))
-      if (!currentTick) throw new Error("Err on current tick");
-      // return configJson.positionSize.toString()
-      const classicConfigObj = new ClassicConfig(configJson.placementType, configJson.positionSize, configJson.poolFee)
-      ticks = classicLogic(currentTick, classicConfigObj)
-      break;
+
+  // No trigger? skip action
+  if (!shouldTriggerExecution(configJson.triggerStyle, triggerObj, _positions, _currentTick, _timeSinceLastExecution)) {
+    return `continue`;
   }
-  // @todo
-  // return (ticks.toString())
-  
-  const lowerTick = ticks[0];
-  const upperTick = ticks[1];
 
+  const channelData = donchianChannel(prices, i32(configJson.lookback));
+
+  const upperLimit: f64 = channelData[0];
+  const lowerLimit: f64 = channelData[1];
+
+  if(upperLimit == 0 || lowerLimit == 0) {
+    return 'continue';
+  }
+
+  const expandedLimits = expandChannel(upperLimit, lowerLimit, configJson.multiplier);
+
+  const expandedUpperLimit = expandedLimits[0];
+  const expandedLowerLimit = expandedLimits[1];
+  
+  const formattedTicks = formatTick(expandedUpperLimit, expandedLowerLimit, configJson.poolFee);
+  
+  const upperTick = formattedTicks[0];
+  const lowerTick = formattedTicks[1];
+
+    // CURVE
   // Get type of curve
+  const range = i32(upperTick - lowerTick)
   const curveType = stringToPositionStyle(configJson.liquidityShape)
+  const positionWidth = curveType == PositionStyle.Absolute ? range : i32(closestDivisibleNumber((range / configJson.bins), getTickSpacing(configJson.poolFee), false))
   // Calculate positions
-  const binWidth = i32(f32(getTickSpacing(configJson.poolFee)) * configJson.binSizeMultiplier);
+  // const binWidth = range//i32(f32(getTickSpacing(configJson.poolFee)) * configJson.binSizeMultiplier);
   const positions = PositionGenerator.applyLiquidityShape(f64(upperTick), f64(lowerTick),
   {
+    reflect: configJson.reflect,
+    invert: configJson.invert,
       // ExponentialDecayOptions
-  rate: configJson.rate,
+  rate: 0,//configJson.rate,
   // NormalOptions
-  mean: configJson.mean,
+  mean: f64((upperTick + lowerTick) / 2), // @note gets set to this anyway
   stdDev:  configJson.stdDev,
   // SigmoidOptions
   k:  configJson.k,
   // LogarithmicOptions
-  base:  configJson.base, 
+  base:  configJson.base,
   // PowerLawOptions
   exponent:  configJson.exponent, 
   // StepOptions
-  threshold:  configJson.threshold,
+  threshold: 0,//  configJson.threshold,
   // SineOptions
   amplitude:  configJson.amplitude,
   frequency: configJson.frequency,
   phase:  configJson.phase,
   // TriangleOptions
-  period:  f64(configJson.period), // note overloaded var, @todo
+  period:  f64(configJson.period),
   // QuadraticOptions
-  a:  configJson.a,
+  a: configJson.a,
   b:  configJson.b,
   c:  configJson.c, 
   // CubicOptions
   d:  configJson.d
-  }, binWidth, curveType);
+  }, positionWidth, curveType);
   // Format and return result
   return renderULMResult(positions, 10000);
 }
@@ -159,7 +162,6 @@ export function config(): string {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Strategy Config",
   "type": "object",
-  "expectedDataTypes": ["OHLC", "Liquidity Manager Positions", "V3 Pool Current Tick", "Time Since Last Execution"],
   "properties": {
     "poolFee": {
       "description": "Pool fee percent for desired pool",
@@ -177,37 +179,43 @@ export function config(): string {
         "0.01%"
       ]
     },
-    "elapsedTendTime": {
-      "title": "Max Time Without Executing",
-      "description": "Regardless of the new position trigger conditions, the strategy will execute if this amount of time has elapsed.",
-      "type": "integer",
-      "default": 604800
+    "lookback": {
+      "type": "number",
+      "title": "Channel Lookback",
+      "description": "Lookback period for channel",
+      "detailedDescription": "Number of candles to use for the channel",
+      "default": 5
+    },
+    "multiplier": {
+      "type": "number",
+      "title": "Channel Multiplier",
+      "description": "Multiplier for channel width",
+      "detailedDescription": "Example: 5% channel width = 1.05",
+      "default": 1
     },
     ${triggerPropertyHelper()},
-    ${StrategyConfig()},
     ${PositionGenerator.propertyHelper([
-        PositionStyle.Normalized,
-        PositionStyle.Absolute,
-        // PositionStyle.Linear, // We always want linear
-        PositionStyle.Sigmoid,
-        PositionStyle.PowerLaw,
-        PositionStyle.Step,
-        // PositionStyle.Sine,
-        PositionStyle.Triangle,
-        PositionStyle.Quadratic,
-        PositionStyle.Cubic,
-        // PositionStyle.ExponentialDecay,
-        // PositionStyle.ExponentialGrowth,
-        // PositionStyle.Logarithmic,
-        // PositionStyle.LogarithmicDecay,
-        PositionStyle.Sawtooth,
-        PositionStyle.SquareWave
-    ])}
+      PositionStyle.Normalized,
+      PositionStyle.Absolute,
+      PositionStyle.Linear,
+      PositionStyle.Sigmoid,
+      PositionStyle.PowerLaw,
+      // PositionStyle.Step,
+      PositionStyle.Sine,
+      PositionStyle.Triangle, 
+      PositionStyle.Quadratic,
+      // PositionStyle.Cubic,
+      // PositionStyle.ExponentialDecay,
+      // PositionStyle.ExponentialGrowth,
+      PositionStyle.Logarithmic,
+      // PositionStyle.LogarithmicDecay,
+      // PositionStyle.Sawtooth,
+      // PositionStyle.SquareWave
+  ])}
   },
   "allOf": [
-    ${PositionGenerator.allOf()},
-    ${allOfTrigger()},
-    ${allOfStrategy()}
+    ${allOfTrigger(strategyDataConnectors)},
+    ${PositionGenerator.allOf()}
   ]
 }`;
 }
