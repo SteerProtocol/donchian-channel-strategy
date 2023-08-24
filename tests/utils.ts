@@ -47,810 +47,696 @@ export const config = `{
       "default": 1
     },
     "triggerStyle": {
-      "enum": [
-        "Current Price set distance from center of positions",
-        "Price leaves active range",
-        "Price moves percentage of active range away",
-        "Price moves one way past positions",
-        "None"
-      ],
+      "enumNames": ["Current Price set distance from center of positions","Price leaves active range","Price moves percentage of active range away","Price moves one way past positions","None"],
+      "enum": [{"name":"Current Price set distance from center of positions","expectedDataTypes":["OHLC","Liquidity Manager Positions","V3 Pool Current Tick","Time Since Last Execution"]},{"name":"Price leaves active range","expectedDataTypes":["OHLC","Liquidity Manager Positions","V3 Pool Current Tick","Time Since Last Execution"]},{"name":"Price moves percentage of active range away","expectedDataTypes":["OHLC","Liquidity Manager Positions","V3 Pool Current Tick","Time Since Last Execution"]},{"name":"Price moves one way past positions","expectedDataTypes":["OHLC","Liquidity Manager Positions","V3 Pool Current Tick","Time Since Last Execution"]},{"name":"None","expectedDataTypes":["OHLC"]}],
       "title": "Logic to trigger new positions",
-      "type": "string",
-      "default": "None"
+      "default": {"name":"None","expectedDataTypes":["OHLC"]}
     },
     "liquidityShape": {
-      "enum": [
-        "Normalized",
-        "Absolute",
-        "Linear",
-        "Sigmoid",
-        "PowerLaw",
-        "Sine",
-        "Triangle",
-        "Quadratic",
-        "Logarithmic"
-      ],
+      "enum": ["Normalized","Absolute","Linear","Sigmoid","PowerLaw","Sine","Triangle","Quadratic","Logarithmic"],
       "title": "Liquidity Shape",
       "type": "string",
-      "default": "Linear"
+      "default": "Absolute"
     }
   },
   "allOf": [
     {
-      "if": {
-        "properties": {
-          "triggerStyle": {
-            "const": "None"
-          }
+    "if": {
+      "properties": {
+        "triggerStyle": {
+          "const": {"name":"None","expectedDataTypes":["OHLC"]}
         }
-      },
-      "then": {
-        "properties": {
-          "expectedDataTypes": {
-            "const": [
-              "OHLC"
-            ],
-            "default": [
-              "OHLC"
-            ],
-            "hidden": true,
-            "type": "string"
-          }
-        },
-        "required": [
-          "expectedDataTypes"
-        ]
       }
     },
-    {
-      "if": {
-        "properties": {
-          "triggerStyle": {
-            "const": "Current Price set distance from center of positions"
-          }
+    "then": {
+      "required": []
+    }
+  },
+  {
+    "if": {
+      "properties": {
+        "triggerStyle": {
+          "const": {"name":"Current Price set distance from center of positions","expectedDataTypes":["OHLC","Liquidity Manager Positions","V3 Pool Current Tick","Time Since Last Execution"]}
         }
-      },
-      "then": {
-        "properties": {
-          "tickDistanceFromCenter": {
+      }
+    },
+    "then": {
+      "properties": {
+        "tickDistanceFromCenter": {
             "type": "integer",
             "title": "Tick Distance",
             "description": "The number of ticks (basis points) from center price of positions to trigger setting new positions",
             "detailedDescription": "The static number of ticks from the center of the active range to trigger: if our position goes from 0-100, and we have a tick distance of 75, we will go out 75 ticks both ways from the center of our positions (50). This means we will skip execution only if the current tick is between -25 and 125. Future positions will determine where the center of the trigger range is located."
-          },
-          "expectedDataTypes": {
-            "const": [
-              "OHLC",
-              "Liquidity Manager Positions",
-              "V3 Pool Current Tick",
-              "Time Since Last Execution"
-            ],
-            "default": [
-              "OHLC",
-              "Liquidity Manager Positions",
-              "V3 Pool Current Tick",
-              "Time Since Last Execution"
-            ],
-            "hidden": true,
-            "type": "string"
-          },
-          "elapsedTendTime": {
-            "type": "number",
-            "title": "Max time between tends",
-            "description": "If trigger conditions have not been met for this period of time, the strategy will execute regardless of trigger logic to update vault accounting.",
-            "default": 1209600
-          }
         },
-        "required": [
-          "tickDistanceFromCenter",
-          "expectedDataTypes",
-          "elapsedTendTime"
-        ]
-      }
-    },
-    {
-      "if": {
-        "properties": {
-          "triggerStyle": {
-            "const": "Price leaves active range"
-          }
+        "elapsedTendTime": {
+          "type": "number",
+          "title": "Max time between tends",
+          "description": "If trigger conditions have not been met for this period of time, the strategy will execute regardless of trigger logic to update vault accounting.",
+          "default": 1209600
         }
       },
-      "then": {
-        "properties": {
-          "expectedDataTypes": {
-            "const": [
-              "OHLC",
-              "Liquidity Manager Positions",
-              "V3 Pool Current Tick",
-              "Time Since Last Execution"
-            ],
-            "default": [
-              "OHLC",
-              "Liquidity Manager Positions",
-              "V3 Pool Current Tick",
-              "Time Since Last Execution"
-            ],
-            "hidden": true,
-            "type": "string"
-          },
-          "elapsedTendTime": {
-            "type": "number",
-            "title": "Max time between tends",
-            "description": "If trigger conditions have not been met for this period of time, the strategy will execute regardless of trigger logic to update vault accounting.",
-            "default": 1209600
-          }
-        },
-        "required": [
-          "expectedDataTypes",
-          "elapsedTendTime"
-        ]
+      "required": ["tickDistanceFromCenter", "elapsedTendTime"]
+    }
+  },
+  {
+    "if": {
+      "properties": {
+        "triggerStyle": {
+          "const": {"name":"Price leaves active range","expectedDataTypes":["OHLC","Liquidity Manager Positions","V3 Pool Current Tick","Time Since Last Execution"]}
+        }
       }
     },
-    {
-      "if": {
-        "properties": {
-          "triggerStyle": {
-            "const": "Price moves percentage of active range away"
-          }
+    "then": {
+      "properties": {
+        "elapsedTendTime": {
+          "type": "number",
+          "title": "Max time between tends",
+          "description": "If trigger conditions have not been met for this period of time, the strategy will execute regardless of trigger logic to update vault accounting.",
+          "default": 1209600
         }
       },
-      "then": {
-        "properties": {
-          "percentageOfPositionRangeToTrigger": {
+      "required": ["elapsedTendTime"]
+    }
+  },
+  {
+    "if": {
+      "properties": {
+        "triggerStyle": {
+          "const": {"name":"Price moves percentage of active range away","expectedDataTypes":["OHLC","Liquidity Manager Positions","V3 Pool Current Tick","Time Since Last Execution"]}
+        }
+      }
+    },
+    "then": {
+      "properties": {
+        "percentageOfPositionRangeToTrigger": {
             "type": "number",
             "title": "Percentage of Range",
             "description": "The percentage of the range away to trigger new positions, 100% or 1 would be at the bounds of the range",
             "detailedDescription": "If you have a simple position ranging from ticks 0 - 100, and you set this value to 1, the trigger range will be the outer bounds. Using 0.5 would make the trigger range 25-75, 2 would make the range -50 - 150."
-          },
-          "expectedDataTypes": {
-            "const": [
-              "OHLC",
-              "Liquidity Manager Positions",
-              "V3 Pool Current Tick",
-              "Time Since Last Execution"
-            ],
-            "default": [
-              "OHLC",
-              "Liquidity Manager Positions",
-              "V3 Pool Current Tick",
-              "Time Since Last Execution"
-            ],
-            "hidden": true,
-            "type": "string"
-          },
-          "elapsedTendTime": {
-            "type": "number",
-            "title": "Max time between tends",
-            "description": "If trigger conditions have not been met for this period of time, the strategy will execute regardless of trigger logic to update vault accounting.",
-            "default": 1209600
-          }
         },
-        "required": [
-          "percentageOfPositionRangeToTrigger",
-          "expectedDataTypes",
-          "elapsedTendTime"
-        ]
-      }
-    },
-    {
-      "if": {
-        "properties": {
-          "triggerStyle": {
-            "const": "Price moves one way past positions"
-          }
+        "elapsedTendTime": {
+          "type": "number",
+          "title": "Max time between tends",
+          "description": "If trigger conditions have not been met for this period of time, the strategy will execute regardless of trigger logic to update vault accounting.",
+          "default": 1209600
         }
       },
-      "then": {
-        "properties": {
-          "triggerWhenOver": {
+      "required": ["percentageOfPositionRangeToTrigger", "elapsedTendTime"]
+    }
+  },
+  {
+    "if": {
+      "properties": {
+        "triggerStyle": {
+          "const": {"name":"Price moves one way past positions","expectedDataTypes":["OHLC","Liquidity Manager Positions","V3 Pool Current Tick","Time Since Last Execution"]}
+        }
+      }
+    },
+    "then": {
+      "properties": {
+        "triggerWhenOver": {
             "type": "boolean",
             "title": "Price Moves Higher",
             "description": "True for if the strategy should set new positions when the price (tick) is higher than the current positions, false for lower",
             "detailedDescription": "If our current position ranges from ticks 0 - 100, true will make our bundle execute only when the current tick is higher. Any other case (current tick less than 100) will result in a continue recommendation."
-          },
-          "expectedDataTypes": {
-            "const": [
-              "OHLC",
-              "Liquidity Manager Positions",
-              "V3 Pool Current Tick",
-              "Time Since Last Execution"
-            ],
-            "default": [
-              "OHLC",
-              "Liquidity Manager Positions",
-              "V3 Pool Current Tick",
-              "Time Since Last Execution"
-            ],
-            "hidden": true,
-            "type": "string"
-          },
-          "elapsedTendTime": {
-            "type": "number",
-            "title": "Max time between tends",
-            "description": "If trigger conditions have not been met for this period of time, the strategy will execute regardless of trigger logic to update vault accounting.",
-            "default": 1209600
-          }
         },
-        "required": [
-          "triggerWhenOver",
-          "expectedDataTypes",
-          "elapsedTendTime"
-        ]
-      }
-    },
-    {
-      "if": {
-        "properties": {
-          "liquidityShape": {
-            "const": "Linear"
-          }
+        "elapsedTendTime": {
+          "type": "number",
+          "title": "Max time between tends",
+          "description": "If trigger conditions have not been met for this period of time, the strategy will execute regardless of trigger logic to update vault accounting.",
+          "default": 1209600
         }
       },
-      "then": {
-        "properties": {
-          "bins": {
-            "type": "number",
-            "title": "Positions",
-            "description": "The max number of positions the strategy will make to achieve the desired curve.",
-            "detailedDescription": "The strategy will attempt to make this number of positions, but can be limited by available range and pool spacing"
-          },
-          "reflect": {
-            "title": "Reflect Curve Over Y-Axis",
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "bins",
-          "reflect"
-        ]
+      "required": ["triggerWhenOver", "elapsedTendTime"]
+    }
+  },
+    {
+    "if": {
+      "properties": {
+        "liquidityShape": {
+          "const": "Linear"
+        }
       }
     },
-    {
-      "if": {
-        "properties": {
-          "liquidityShape": {
-            "const": "Normalized"
-          }
+    "then": {
+      "properties": {
+        "bins": {
+          "type": "number",
+          "title": "Positions",
+          "description": "The max number of positions the strategy will make to achieve the desired curve.",
+          "detailedDescription": "The strategy will attempt to make this number of positions, but can be limited by available range and pool spacing"
+        },
+        "reflect": {
+          "title": "Reflect Curve Over Y-Axis",
+          "type": "boolean"
         }
       },
-      "then": {
-        "properties": {
-          "bins": {
-            "type": "number",
-            "title": "Positions",
-            "description": "The max number of positions the strategy will make to achieve the desired curve.",
-            "detailedDescription": "The strategy will attempt to make this number of positions, but can be limited by available range and pool spacing"
-          },
-          "stdDev": {
-            "type": "number",
-            "title": "Standard Deviation",
-            "description": "The value to use as the standard deviation when forming the Gaussian curve.",
-            "detailedDescription": "The value in ticks representing the average distance from the center of the curve. Increasing this value will increase the spread or coverage of the curve.",
-            "default": 5
-          },
-          "invert": {
-            "title": "Invert Curve Over X-Axis",
-            "type": "boolean",
-            "default": false
-          }
-        },
-        "required": [
-          "bins",
-          "stdDev"
-        ]
+      "required": ["bins"]
+    }
+  },
+  {
+    "if": {
+      "properties": {
+        "liquidityShape": {
+          "const": "Normalized"
+        }
       }
     },
-    {
-      "if": {
-        "properties": {
-          "liquidityShape": {
-            "const": "ExponentialDecay"
-          }
+    "then": {
+      "properties": {
+        "bins": {
+          "type": "number",
+          "title": "Positions",
+          "description": "The max number of positions the strategy will make to achieve the desired curve.",
+          "detailedDescription": "The strategy will attempt to make this number of positions, but can be limited by available range and pool spacing"
+        },
+        "stdDev": {
+          "type": "number",
+          "title": "Standard Deviation",
+          "description": "The value to use as the standard deviation when forming the Gaussian curve.",
+          "detailedDescription": "The value in ticks representing the average distance from the center of the curve. Increasing this value will increase the spread or coverage of the curve.",
+          "default": 5
+        },
+        "invert": {
+          "title": "Invert Curve Over X-Axis",
+          "type": "boolean",
+          "default": false
         }
       },
-      "then": {
-        "properties": {
-          "rate": {
-            "type": "number",
-            "title": "Rate",
-            "description": "The decay constant, related to the half-life of the substance",
-            "detailedDescription": "The higher the rate, the faster the decay of quantity, giving a more dramatic and steep curve."
-          }
-        },
-        "required": [
-          "rate"
-        ]
-      }
-    },
-    {
-      "if": {
-        "properties": {
-          "liquidityShape": {
-            "const": "Sigmoid"
-          }
-        }
-      },
-      "then": {
-        "properties": {
-          "bins": {
-            "type": "number",
-            "title": "Positions",
-            "description": "The max number of positions the strategy will make to achieve the desired curve.",
-            "detailedDescription": "The strategy will attempt to make this number of positions, but can be limited by available range and pool spacing"
-          },
-          "k": {
-            "type": "number",
-            "title": "Slope (k)",
-            "default": 5,
-            "description": "The slope of the curve or the steepness of the sigmoid function."
-          },
-          "reflect": {
-            "title": "Reflect Curve Over Y-Axis",
-            "type": "boolean",
-            "default": false
-          },
-          "invert": {
-            "title": "Invert Curve Over X-Axis",
-            "type": "boolean",
-            "default": false
-          }
-        },
-        "required": [
-          "bins",
-          "k",
-          "reflect"
-        ]
-      }
-    },
-    {
-      "if": {
-        "properties": {
-          "liquidityShape": {
-            "const": "Logarithmic"
-          }
-        }
-      },
-      "then": {
-        "properties": {
-          "bins": {
-            "type": "number",
-            "title": "Positions",
-            "description": "The max number of positions the strategy will make to achieve the desired curve.",
-            "detailedDescription": "The strategy will attempt to make this number of positions, but can be limited by available range and pool spacing"
-          },
-          "base": {
-            "type": "number",
-            "title": "Base",
-            "description": "The base of the logarithm.",
-            "detailedDescription": "Increasing this value will give the curve a sharper angle and flatten out sooner. ",
-            "default": 2
-          },
-          "reflect": {
-            "title": "Reflect Curve Over Y-Axis",
-            "type": "boolean",
-            "default": false
-          },
-          "invert": {
-            "title": "Invert Curve Over X-Axis",
-            "type": "boolean",
-            "default": false
-          }
-        },
-        "required": [
-          "bins",
-          "base"
-        ]
-      }
-    },
-    {
-      "if": {
-        "properties": {
-          "liquidityShape": {
-            "const": "PowerLaw"
-          }
-        }
-      },
-      "then": {
-        "properties": {
-          "bins": {
-            "type": "number",
-            "title": "Positions",
-            "description": "The max number of positions the strategy will make to achieve the desired curve.",
-            "detailedDescription": "The strategy will attempt to make this number of positions, but can be limited by available range and pool spacing"
-          },
-          "exponent": {
-            "type": "number",
-            "title": "Exponent",
-            "description": "The exponent of the power law",
-            "detailedDescription": "The inverse of this value is applied to the x value, larger values will lead to steeper curves.",
-            "default": 2
-          },
-          "reflect": {
-            "title": "Reflect Curve Over Y-Axis",
-            "type": "boolean",
-            "default": false
-          },
-          "invert": {
-            "title": "Invert Curve Over X-Axis",
-            "type": "boolean",
-            "default": false
-          }
-        },
-        "required": [
-          "bins",
-          "exponent",
-          "reflect"
-        ]
-      }
-    },
-    {
-      "if": {
-        "properties": {
-          "liquidityShape": {
-            "const": "Step"
-          }
-        }
-      },
-      "then": {
-        "properties": {
-          "bins": {
-            "type": "number",
-            "title": "Positions",
-            "description": "The max number of positions the strategy will make to achieve the desired curve.",
-            "detailedDescription": "The strategy will attempt to make this number of positions, but can be limited by available range and pool spacing"
-          },
-          "threshold": {
-            "type": "number",
-            "title": "Threshold"
-          }
-        },
-        "required": [
-          "bins",
-          "threshold"
-        ]
-      }
-    },
-    {
-      "if": {
-        "properties": {
-          "liquidityShape": {
-            "const": "Sine"
-          }
-        }
-      },
-      "then": {
-        "properties": {
-          "bins": {
-            "type": "number",
-            "title": "Positions",
-            "description": "The max number of positions the strategy will make to achieve the desired curve.",
-            "detailedDescription": "The strategy will attempt to make this number of positions, but can be limited by available range and pool spacing"
-          },
-          "amplitude": {
-            "type": "number",
-            "title": "Amplitude",
-            "default": 1,
-            "description": "The amplitude determines the maximum height of the sine curve. Larger numbers will result in more dramatic highs.",
-            "detailedDescription": "The amplitude determines the maximum height of the sine curve. Larger numbers will result in more dramatic highs."
-          },
-          "frequency": {
-            "type": "number",
-            "title": "Frequency",
-            "default": 0.5,
-            "description": "The frequency determines the number of cycles (complete oscillations) the sine curve completes in one unit of distance along the x-axis. In the case of frequency 1, the sine curve completes one full cycle in one unit of distance along the x-axis.",
-            "detailedDescription": "The frequency determines the number of cycles (complete oscillations) the sine curve completes in one unit of distance along the x-axis. In the case of frequency 1, the sine curve completes one full cycle in one unit of distance along the x-axis."
-          },
-          "phase": {
-            "type": "number",
-            "title": "Phase",
-            "default": 0,
-            "description": "The phase represents a horizontal shift of the sine curve. When the phase is 0, the curve starts at its highest point (the peak).",
-            "detailedDescription": "The phase represents a horizontal shift of the sine curve. When the phase is 0, the curve starts at its highest point (the peak)."
-          }
-        },
-        "required": [
-          "bins",
-          "amplitude",
-          "frequency",
-          "phase"
-        ]
-      }
-    },
-    {
-      "if": {
-        "properties": {
-          "liquidityShape": {
-            "const": "Triangle"
-          }
-        }
-      },
-      "then": {
-        "properties": {
-          "bins": {
-            "type": "number",
-            "title": "Positions",
-            "description": "The max number of positions the strategy will make to achieve the desired curve.",
-            "detailedDescription": "The strategy will attempt to make this number of positions, but can be limited by available range and pool spacing"
-          },
-          "amplitude": {
-            "type": "number",
-            "title": "Amplitude",
-            "description": "The height of the triangle given on the y-axis.",
-            "detailedDescription": "The amplitude of a triangle wave refers to the distance from the baseline (midpoint) of the wave to its peak (or trough). It represents the maximum deviation of the waveform from its average value."
-          },
-          "period": {
-            "type": "number",
-            "title": "Period",
-            "description": "The distance taken to complete a single cycle of the triangle pattern.",
-            "detailedDescription": "The period of a triangle wave is the time it takes for the wave to complete one full cycle. In other words, it's the distance along the time axis between two consecutive points that correspond to identical positions in the waveform."
-          },
-          "phase": {
-            "type": "number",
-            "title": "Phase",
-            "description": "X-axis offset to the waveform cycle.",
-            "detailedDescription": "Phase refers to the position of a waveform within its cycle at a specific point in time."
-          }
-        },
-        "required": [
-          "bins",
-          "amplitude",
-          "period",
-          "phase"
-        ]
-      }
-    },
-    {
-      "if": {
-        "properties": {
-          "liquidityShape": {
-            "const": "Quadratic"
-          }
-        }
-      },
-      "then": {
-        "properties": {
-          "bins": {
-            "type": "number",
-            "title": "Positions",
-            "description": "The max number of positions the strategy will make to achieve the desired curve.",
-            "detailedDescription": "The strategy will attempt to make this number of positions, but can be limited by available range and pool spacing"
-          },
-          "a": {
-            "type": "number",
-            "title": "A",
-            "default": 1,
-            "description": "Ref: ax^2 + bx + c"
-          },
-          "b": {
-            "type": "number",
-            "title": "B",
-            "default": 1,
-            "description": "Ref: ax^2 + bx + c"
-          },
-          "c": {
-            "type": "number",
-            "title": "C",
-            "default": 1,
-            "description": "Ref: ax^2 + bx + c"
-          },
-          "reflect": {
-            "title": "Reflect Curve Over Y-Axis",
-            "type": "boolean",
-            "default": false
-          },
-          "invert": {
-            "title": "Invert Curve Over X-Axis",
-            "type": "boolean",
-            "default": false
-          }
-        },
-        "required": [
-          "bins",
-          "a",
-          "b",
-          "c"
-        ]
-      }
-    },
-    {
-      "if": {
-        "properties": {
-          "liquidityShape": {
-            "const": "Cubic"
-          }
-        }
-      },
-      "then": {
-        "properties": {
-          "bins": {
-            "type": "number",
-            "title": "Positions",
-            "description": "The max number of positions the strategy will make to achieve the desired curve.",
-            "detailedDescription": "The strategy will attempt to make this number of positions, but can be limited by available range and pool spacing"
-          },
-          "a": {
-            "type": "number",
-            "title": "A",
-            "default": 1,
-            "description": "Ref: ax^3 + bx^2 + cx + d"
-          },
-          "b": {
-            "type": "number",
-            "title": "B",
-            "default": 1,
-            "description": "Ref: ax^3 + bx^2 + cx + d"
-          },
-          "c": {
-            "type": "number",
-            "title": "C",
-            "default": 1,
-            "description": "Ref: ax^3 + bx^2 + cx + d"
-          },
-          "d": {
-            "type": "number",
-            "title": "D",
-            "default": 1,
-            "description": "Ref: ax^3 + bx^2 + cx + d"
-          },
-          "reflect": {
-            "title": "Reflect Curve Over Y-Axis",
-            "type": "boolean",
-            "default": false
-          },
-          "invert": {
-            "title": "Invert Curve Over X-Axis",
-            "type": "boolean",
-            "default": false
-          }
-        },
-        "required": [
-          "bins",
-          "a",
-          "b",
-          "c",
-          "d"
-        ]
-      }
-    },
-    {
-      "if": {
-        "properties": {
-          "liquidityShape": {
-            "const": "ExponentialGrowth"
-          }
-        }
-      },
-      "then": {
-        "properties": {
-          "bins": {
-            "type": "number",
-            "title": "Positions",
-            "description": "The max number of positions the strategy will make to achieve the desired curve.",
-            "detailedDescription": "The strategy will attempt to make this number of positions, but can be limited by available range and pool spacing"
-          },
-          "rate": {
-            "type": "number",
-            "title": "Rate"
-          }
-        },
-        "required": [
-          "bins",
-          "rate"
-        ]
-      }
-    },
-    {
-      "if": {
-        "properties": {
-          "liquidityShape": {
-            "const": "LogarithmicDecay"
-          }
-        }
-      },
-      "then": {
-        "properties": {
-          "bins": {
-            "type": "number",
-            "title": "Positions",
-            "description": "The max number of positions the strategy will make to achieve the desired curve.",
-            "detailedDescription": "The strategy will attempt to make this number of positions, but can be limited by available range and pool spacing"
-          },
-          "rate": {
-            "type": "number",
-            "title": "Rate"
-          },
-          "base": {
-            "type": "number",
-            "title": "Base"
-          }
-        },
-        "required": [
-          "bins",
-          "rate",
-          "base"
-        ]
-      }
-    },
-    {
-      "if": {
-        "properties": {
-          "liquidityShape": {
-            "const": "Sawtooth"
-          }
-        }
-      },
-      "then": {
-        "properties": {
-          "bins": {
-            "type": "number",
-            "title": "Positions",
-            "description": "The max number of positions the strategy will make to achieve the desired curve.",
-            "detailedDescription": "The strategy will attempt to make this number of positions, but can be limited by available range and pool spacing"
-          },
-          "amplitude": {
-            "type": "number",
-            "title": "Amplitude"
-          },
-          "period": {
-            "type": "number",
-            "title": "Period"
-          },
-          "phase": {
-            "type": "number",
-            "title": "Phase"
-          }
-        },
-        "required": [
-          "bins",
-          "amplitude",
-          "period",
-          "phase"
-        ]
-      }
-    },
-    {
-      "if": {
-        "properties": {
-          "liquidityShape": {
-            "const": "SquareWave"
-          }
-        }
-      },
-      "then": {
-        "properties": {
-          "bins": {
-            "type": "number",
-            "title": "Positions",
-            "description": "The max number of positions the strategy will make to achieve the desired curve.",
-            "detailedDescription": "The strategy will attempt to make this number of positions, but can be limited by available range and pool spacing"
-          },
-          "amplitude": {
-            "type": "number",
-            "title": "Amplitude"
-          },
-          "period": {
-            "type": "number",
-            "title": "Period"
-          },
-          "phase": {
-            "type": "number",
-            "title": "Phase"
-          }
-        },
-        "required": [
-          "bins",
-          "amplitude",
-          "period",
-          "phase"
-        ]
-      }
-    },
-    {
       "required": [
-        "liquidityShape"
+        "bins",
+        "stdDev"
       ]
     }
+  },
+  {
+    "if": {
+      "properties": {
+        "liquidityShape": {
+          "const": "ExponentialDecay"
+        }
+      }
+    },
+    "then": {
+      "properties": {
+        "rate": {
+          "type": "number",
+          "title": "Rate",
+          "description": "The decay constant, related to the half-life of the substance",
+          "detailedDescription": "The higher the rate, the faster the decay of quantity, giving a more dramatic and steep curve."
+        }
+      },
+      "required": [
+        "rate"
+      ]
+    }
+  },
+  {
+    "if": {
+      "properties": {
+        "liquidityShape": {
+          "const": "Sigmoid"
+        }
+      }
+    },
+    "then": {
+      "properties": {
+        "bins": {
+          "type": "number",
+          "title": "Positions",
+          "description": "The max number of positions the strategy will make to achieve the desired curve.",
+          "detailedDescription": "The strategy will attempt to make this number of positions, but can be limited by available range and pool spacing"
+        },
+        "k": {
+          "type": "number",
+          "title": "Slope (k)",
+          "default": 5,
+          "description": "The slope of the curve or the steepness of the sigmoid function."
+        },
+        "reflect": {
+          "title": "Reflect Curve Over Y-Axis",
+          "type": "boolean",
+          "default": false
+        },
+        "invert": {
+          "title": "Invert Curve Over X-Axis",
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "required": [
+        "bins",
+        "k"
+      ]
+    }
+  },
+  {
+    "if": {
+      "properties": {
+        "liquidityShape": {
+          "const": "Logarithmic"
+        }
+      }
+    },
+    "then": {
+      "properties": {
+        "bins": {
+          "type": "number",
+          "title": "Positions",
+          "description": "The max number of positions the strategy will make to achieve the desired curve.",
+          "detailedDescription": "The strategy will attempt to make this number of positions, but can be limited by available range and pool spacing"
+        },
+        "base": {
+          "type": "number",
+          "title": "Base",
+          "description": "The base of the logarithm.",
+          "detailedDescription": "Increasing this value will give the curve a sharper angle and flatten out sooner. ",
+          "default": 2
+        },
+        "reflect": {
+          "title": "Reflect Curve Over Y-Axis",
+          "type": "boolean",
+          "default": false
+        },
+        "invert": {
+          "title": "Invert Curve Over X-Axis",
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "required": [
+        "bins",
+        "base"
+      ]
+    }
+  },
+  {
+    "if": {
+      "properties": {
+        "liquidityShape": {
+          "const": "PowerLaw"
+        }
+      }
+    },
+    "then": {
+      "properties": {
+        "bins": {
+          "type": "number",
+          "title": "Positions",
+          "description": "The max number of positions the strategy will make to achieve the desired curve.",
+          "detailedDescription": "The strategy will attempt to make this number of positions, but can be limited by available range and pool spacing"
+        },
+        "exponent": {
+          "type": "number",
+          "title": "Exponent",
+          "description": "The exponent of the power law",
+          "detailedDescription": "The inverse of this value is applied to the x value, larger values will lead to steeper curves.",
+          "default": 2
+        },
+        "reflect": {
+          "title": "Reflect Curve Over Y-Axis",
+          "type": "boolean",
+          "default": false
+        },
+        "invert": {
+          "title": "Invert Curve Over X-Axis",
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "required": [
+        "bins",
+        "exponent"
+      ]
+    }
+  },
+  {
+    "if": {
+      "properties": {
+        "liquidityShape": {
+          "const": "Step"
+        }
+      }
+    },
+    "then": {
+      "properties": {
+        "bins": {
+          "type": "number",
+          "title": "Positions",
+          "description": "The max number of positions the strategy will make to achieve the desired curve.",
+          "detailedDescription": "The strategy will attempt to make this number of positions, but can be limited by available range and pool spacing"
+        },
+        "threshold": {
+          "type": "number",
+          "title": "Threshold"
+        }
+      },
+      "required": [
+        "bins",
+        "threshold"
+      ]
+    }
+  },
+  {
+    "if": {
+      "properties": {
+        "liquidityShape": {
+          "const": "Sine"
+        }
+      }
+    },
+    "then": {
+      "properties": {
+        "bins": {
+          "type": "number",
+          "title": "Positions",
+          "description": "The max number of positions the strategy will make to achieve the desired curve.",
+          "detailedDescription": "The strategy will attempt to make this number of positions, but can be limited by available range and pool spacing"
+        },
+        "amplitude": {
+          "type": "number",
+          "title": "Amplitude",
+          "default": 1,
+          "description": "The amplitude determines the maximum height of the sine curve. Larger numbers will result in more dramatic highs.",
+          "detailedDescription": "The amplitude determines the maximum height of the sine curve. Larger numbers will result in more dramatic highs."
+        },
+        "frequency": {
+          "type": "number",
+          "title": "Frequency",
+          "default": 0.5,
+          "description": "The frequency determines the number of cycles (complete oscillations) the sine curve completes in one unit of distance along the x-axis. In the case of frequency 1, the sine curve completes one full cycle in one unit of distance along the x-axis.",
+          "detailedDescription": "The frequency determines the number of cycles (complete oscillations) the sine curve completes in one unit of distance along the x-axis. In the case of frequency 1, the sine curve completes one full cycle in one unit of distance along the x-axis."
+        },
+        "phase": {
+          "type": "number",
+          "title": "Phase",
+          "default": 0,
+          "description": "The phase represents a horizontal shift of the sine curve. When the phase is 0, the curve starts at its highest point (the peak).",
+          "detailedDescription": "The phase represents a horizontal shift of the sine curve. When the phase is 0, the curve starts at its highest point (the peak)."
+        }
+      },
+      "required": [
+        "bins",
+        "amplitude",
+        "frequency",
+        "phase"
+      ]
+    }
+  },
+  {
+    "if": {
+      "properties": {
+        "liquidityShape": {
+          "const": "Triangle"
+        }
+      }
+    },
+    "then": {
+      "properties": {
+        "bins": {
+          "type": "number",
+          "title": "Positions",
+          "description": "The max number of positions the strategy will make to achieve the desired curve.",
+          "detailedDescription": "The strategy will attempt to make this number of positions, but can be limited by available range and pool spacing"
+        },
+        "amplitude": {
+          "type": "number",
+          "title": "Amplitude",
+          "description": "The height of the triangle given on the y-axis.",
+          "detailedDescription": "The amplitude of a triangle wave refers to the distance from the baseline (midpoint) of the wave to its peak (or trough). It represents the maximum deviation of the waveform from its average value."
+        },
+        "period": {
+          "type": "number",
+          "title": "Period",
+          "description": "The distance taken to complete a single cycle of the triangle pattern.",
+          "detailedDescription": "The period of a triangle wave is the time it takes for the wave to complete one full cycle. In other words, it's the distance along the time axis between two consecutive points that correspond to identical positions in the waveform."
+        },
+        "phase": {
+          "type": "number",
+          "title": "Phase",
+          "description": "X-axis offset to the waveform cycle.",
+          "detailedDescription": "Phase refers to the position of a waveform within its cycle at a specific point in time."
+        }
+      },
+      "required": [
+        "bins",
+        "amplitude",
+        "period",
+        "phase"
+      ]
+    }
+  },
+  {
+    "if": {
+      "properties": {
+        "liquidityShape": {
+          "const": "Quadratic"
+        }
+      }
+    },
+    "then": {
+      "properties": {
+        "bins": {
+          "type": "number",
+          "title": "Positions",
+          "description": "The max number of positions the strategy will make to achieve the desired curve.",
+          "detailedDescription": "The strategy will attempt to make this number of positions, but can be limited by available range and pool spacing"
+        },
+        "a": {
+          "type": "number",
+          "title": "A",
+          "default": 1,
+          "description": "Ref: ax^2 + bx + c"
+        },
+        "b": {
+          "type": "number",
+          "title": "B",
+          "default": 1,
+          "description": "Ref: ax^2 + bx + c"
+        },
+        "c": {
+          "type": "number",
+          "title": "C",
+          "default": 1,
+          "description": "Ref: ax^2 + bx + c"
+        },
+        "reflect": {
+          "title": "Reflect Curve Over Y-Axis",
+          "type": "boolean",
+          "default": false
+        },
+        "invert": {
+          "title": "Invert Curve Over X-Axis",
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "required": [
+        "bins",
+        "a",
+        "b",
+        "c"
+      ]
+    }
+  },
+  {
+    "if": {
+      "properties": {
+        "liquidityShape": {
+          "const": "Cubic"
+        }
+      }
+    },
+    "then": {
+      "properties": {
+        "bins": {
+          "type": "number",
+          "title": "Positions",
+          "description": "The max number of positions the strategy will make to achieve the desired curve.",
+          "detailedDescription": "The strategy will attempt to make this number of positions, but can be limited by available range and pool spacing"
+        },
+        "a": {
+          "type": "number",
+          "title": "A",
+          "default": 1,
+          "description": "Ref: ax^3 + bx^2 + cx + d"
+        },
+        "b": {
+          "type": "number",
+          "title": "B",
+          "default": 1,
+          "description": "Ref: ax^3 + bx^2 + cx + d"
+        },
+        "c": {
+          "type": "number",
+          "title": "C",
+          "default": 1,
+          "description": "Ref: ax^3 + bx^2 + cx + d"
+        },
+        "d": {
+          "type": "number",
+          "title": "D",
+          "default": 1,
+          "description": "Ref: ax^3 + bx^2 + cx + d"
+        },
+        "reflect": {
+          "title": "Reflect Curve Over Y-Axis",
+          "type": "boolean",
+          "default": false
+        },
+        "invert": {
+          "title": "Invert Curve Over X-Axis",
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "required": [
+        "bins",
+        "a",
+        "b",
+        "c",
+        "d"
+      ]
+    }
+  },
+  {
+    "if": {
+      "properties": {
+        "liquidityShape": {
+          "const": "ExponentialGrowth"
+        }
+      }
+    },
+    "then": {
+      "properties": {
+        "bins": {
+          "type": "number",
+          "title": "Positions",
+          "description": "The max number of positions the strategy will make to achieve the desired curve.",
+          "detailedDescription": "The strategy will attempt to make this number of positions, but can be limited by available range and pool spacing"
+        },
+        "rate": {
+          "type": "number",
+          "title": "Rate"
+        }
+      },
+      "required": [
+        "bins",
+        "rate"
+      ]
+    }
+  },
+  {
+    "if": {
+      "properties": {
+        "liquidityShape": {
+          "const": "LogarithmicDecay"
+        }
+      }
+    },
+    "then": {
+      "properties": {
+        "bins": {
+          "type": "number",
+          "title": "Positions",
+          "description": "The max number of positions the strategy will make to achieve the desired curve.",
+          "detailedDescription": "The strategy will attempt to make this number of positions, but can be limited by available range and pool spacing"
+        },
+        "rate": {
+          "type": "number",
+          "title": "Rate"
+        },
+        "base": {
+          "type": "number",
+          "title": "Base"
+        }
+      },
+      "required": [
+        "bins",
+        "rate",
+        "base"
+      ]
+    }
+  },
+  {
+    "if": {
+      "properties": {
+        "liquidityShape": {
+          "const": "Sawtooth"
+        }
+      }
+    },
+    "then": {
+      "properties": {
+        "bins": {
+          "type": "number",
+          "title": "Positions",
+          "description": "The max number of positions the strategy will make to achieve the desired curve.",
+          "detailedDescription": "The strategy will attempt to make this number of positions, but can be limited by available range and pool spacing"
+        },
+        "amplitude": {
+          "type": "number",
+          "title": "Amplitude"
+        },
+        "period": {
+          "type": "number",
+          "title": "Period"
+        },
+        "phase": {
+          "type": "number",
+          "title": "Phase"
+        }
+      },
+      "required": [
+        "bins",
+        "amplitude",
+        "period",
+        "phase"
+      ]
+    }
+  },
+  {
+    "if": {
+      "properties": {
+        "liquidityShape": {
+          "const": "SquareWave"
+        }
+      }
+    },
+    "then": {
+      "properties": {
+        "bins": {
+          "type": "number",
+          "title": "Positions",
+          "description": "The max number of positions the strategy will make to achieve the desired curve.",
+          "detailedDescription": "The strategy will attempt to make this number of positions, but can be limited by available range and pool spacing"
+        },
+        "amplitude": {
+          "type": "number",
+          "title": "Amplitude"
+        },
+        "period": {
+          "type": "number",
+          "title": "Period"
+        },
+        "phase": {
+          "type": "number",
+          "title": "Phase"
+        }
+      },
+      "required": [
+        "bins",
+        "amplitude",
+        "period",
+        "phase"
+      ]
+    }
+  },
+  {
+    "required": [
+      "liquidityShape"
+    ]
+  }
   ]
 }`;
 

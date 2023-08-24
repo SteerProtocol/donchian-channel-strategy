@@ -1,7 +1,7 @@
 import { CurvesConfigHelper, getTickFromPrice, getTickSpacing, renderULMResult } from "@steerprotocol/concentrated-liquidity-strategy/assembly";
 import { console, Candle, SlidingWindow, parseCandles, Position, closestDivisibleNumber } from "@steerprotocol/strategy-utils/assembly";
 import { JSON } from "json-as/assembly";
-import { TriggerConfigHelper, TriggerStyle, allOfTrigger, getTriggerStyle, shouldTriggerExecution, triggerFromDistance, triggerPropertyHelper } from "@steerprotocol/strategy-utils/assembly/utils/triggers";
+import { TriggerConfigHelper, TriggerStyle, allOfTrigger, getTriggerStyle, shouldTriggerExecution, TriggerInfo, triggerPropertyHelper } from "@steerprotocol/strategy-utils/assembly/utils/triggers";
 import { DonchianConfig, donchianChannel, donchianLogic, expandChannel, formatTick } from "./donchian";
 import { PositionStyle, stringToPositionStyle } from "@steerprotocol/concentrated-liquidity-strategy/assembly";
 import { PositionGenerator } from "@steerprotocol/concentrated-liquidity-strategy/assembly";
@@ -16,7 +16,7 @@ class Config  {
   poolFee: i32 = 0;
 
   //
-  triggerStyle: string = ''
+  triggerStyle: TriggerInfo = new TriggerInfo("",[])
   triggerWhenOver: boolean = false;
   tickPriceTrigger: i64 = 0;
   percentageOfPositionRangeToTrigger: f64 = 0.0;
@@ -93,7 +93,7 @@ export function execute(_prices: string, _positions: string, _currentTick: strin
 
 
   // No trigger? skip action
-  if (!shouldTriggerExecution(configJson.triggerStyle, triggerObj, _positions, _currentTick, _timeSinceLastExecution)) {
+  if (!shouldTriggerExecution(configJson.triggerStyle.name, triggerObj, _positions, _currentTick, _timeSinceLastExecution)) {
     return `continue`;
   }
 
@@ -193,7 +193,7 @@ export function config(): string {
       "detailedDescription": "Example: 5% channel width = 1.05",
       "default": 1
     },
-    ${triggerPropertyHelper()},
+    ${triggerPropertyHelper(strategyDataConnectors)},
     ${PositionGenerator.propertyHelper([
       PositionStyle.Normalized,
       PositionStyle.Absolute,
