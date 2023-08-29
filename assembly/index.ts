@@ -25,8 +25,8 @@ class Config  {
   //
   //
   //
-  liquidityShape: string = 'Absolute';
-  // no absolute
+  liquidityShape: string = 'Basic';
+  // no Basic
 reflect: boolean = false;
 invert: boolean = false;
   // most options
@@ -120,7 +120,7 @@ export function execute(_prices: string, _positions: string, _currentTick: strin
   // Get type of curve
   const range = i32(upperTick - lowerTick)
   const curveType = stringToPositionStyle(configJson.liquidityShape)
-  const positionWidth = curveType == PositionStyle.Absolute ? range : i32(closestDivisibleNumber((range / configJson.bins), getTickSpacing(configJson.poolFee), false))
+  const positionWidth = curveType == PositionStyle.Basic ? range : i32(closestDivisibleNumber((range / configJson.bins), getTickSpacing(configJson.poolFee), false))
   // Calculate positions
   // const binWidth = range//i32(f32(getTickSpacing(configJson.poolFee)) * configJson.binSizeMultiplier);
   const positions = PositionGenerator.applyLiquidityShape(f64(upperTick), f64(lowerTick),
@@ -196,7 +196,7 @@ export function config(): string {
     ${triggerPropertyHelper(strategyDataConnectors)},
     ${PositionGenerator.propertyHelper([
       PositionStyle.Normalized,
-      PositionStyle.Absolute,
+      PositionStyle.Basic,
       PositionStyle.Linear,
       PositionStyle.Sigmoid,
       PositionStyle.PowerLaw,
