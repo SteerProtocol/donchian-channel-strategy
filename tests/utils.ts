@@ -53,10 +53,10 @@ export const config = `{
       "default": {"name":"None","expectedDataTypes":["OHLC"]}
     },
     "liquidityShape": {
-      "enum": ["Normalized","Absolute","Linear","Sigmoid","PowerLaw","Sine","Triangle","Quadratic","Logarithmic"],
+      "enum": ["Normalized","Basic","Linear","Sigmoid","PowerLaw","Sine","Triangle","Quadratic","Logarithmic"],
       "title": "Liquidity Shape",
       "type": "string",
-      "default": "Absolute"
+      "default": "Basic"
     }
   },
   "allOf": [

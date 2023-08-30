@@ -13,7 +13,7 @@ describe("WASM Module", () => {
     test("can render config", async () => {
       // Call the config function on the strategy bundle
       const result = myModule.config();
-      // fs.writeFileSync('./stcnf.txt', result)
+      fs.writeFileSync('./stcnf.txt', result)
       // Pull the result from memory and parse the result
       const parsedResult = JSON.parse(result);
 
@@ -31,7 +31,7 @@ describe("WASM Module", () => {
 
       // Call the config function on the strategy bundle
       const result = myModule.execute(JSON.stringify([...candles2]));
-        console.log(result)
+        // console.log(result)
       // Pull the result from memory and parse the result
       const parsedResult = JSON.parse(result);
 

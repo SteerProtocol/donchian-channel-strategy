@@ -1,0 +1,96 @@
+diff --git a/node_modules/@steerprotocol/app-loader/lib/index.js b/node_modules/@steerprotocol/app-loader/lib/index.js
+index 4b18507..06f3a34 100644
+--- a/node_modules/@steerprotocol/app-loader/lib/index.js
++++ b/node_modules/@steerprotocol/app-loader/lib/index.js
+@@ -37,7 +37,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
+ Object.defineProperty(exports, "__esModule", { value: true });
+ exports.loadWasm = exports.RawTradeData = exports.Candle = void 0;
+ /* eslint-disable @typescript-eslint/ban-ts-comment */
+-const ccxt_1 = __importDefault(require("ccxt"));
++// const ccxt_1 = __importDefault(require("ccxt"));
+ const timestring_1 = __importDefault(require("timestring"));
+ const Candle_1 = require("./Candle");
+ Object.defineProperty(exports, "Candle", { enumerable: true, get: function () { return Candle_1.Candle; } });
+@@ -78,44 +78,44 @@ function instantiate(module, imports = {}) {
+                 'console.log': (text) => {
+                     console.log(__liftString(text));
+                 },
+-                ccxt_fetchOHLCV: (exchangeId, symbol, timeframe, limit, since) => {
+-                    // Since may need to be passed as 64-bit?
+-                    // Timestamps are large
+-                    // @ts-ignore
+-                    const currentState = _exports.asyncify_get_state();
+-                    if (currentState === 2) {
+-                        //console.log("asyncify_stop_rewind() [resume wasm]");
+-                        // @ts-ignore
+-                        _exports.asyncify_stop_rewind();
+-                        return _ohlcvPtr;
+-                    }
+-                    else if (currentState === 0) {
+-                        //console.log("asyncify_start_unwind() [pause wasm]");
+-                        // @ts-ignore
+-                        _exports.asyncify_start_unwind(ASYNCIFY_PTR);
+-                        // How about we pass an Enum back and forth?
+-                        const _exchange = __liftString(exchangeId);
+-                        const _symbol = __liftString(symbol);
+-                        const _timeframe = __liftString(timeframe);
+-                        if (!_exchange || !_symbol || !_timeframe)
+-                            throw new Error("Exchange, Symbol, or Timeframe not provided when fetching OHCLV data.");
+-                        // @ts-ignore
+-                        new ccxt_1.default[_exchange]({
+-                            apiKey: "",
+-                            secret: ""
+-                        }).fetchOHLCV(_symbol, _timeframe, since, limit).then((data) => {
+-                            //console.log("asyncify_stop_unwind() [unpause wasm]");
+-                            // @ts-ignore
+-                            _exports.asyncify_stop_unwind();
+-                            // @ts-ignore: __new is defined
+-                            _ohlcvPtr = __lowerStaticArray((pointer, value) => { __setU32(pointer, __lowerStaticArray(__setF64, 7, 3, value, Float64Array)); }, 8, 2, data);
+-                            //console.log("asyncify_start_rewind() [resuming wasm]");
+-                            // @ts-ignore
+-                            _exports.asyncify_start_rewind(ASYNCIFY_PTR);
+-                            _exports.execute();
+-                        });
+-                    }
+-                }
++                // ccxt_fetchOHLCV: (exchangeId, symbol, timeframe, limit, since) => {
++                //     // Since may need to be passed as 64-bit?
++                //     // Timestamps are large
++                //     // @ts-ignore
++                //     const currentState = _exports.asyncify_get_state();
++                //     if (currentState === 2) {
++                //         //console.log("asyncify_stop_rewind() [resume wasm]");
++                //         // @ts-ignore
++                //         _exports.asyncify_stop_rewind();
++                //         return _ohlcvPtr;
++                //     }
++                //     else if (currentState === 0) {
++                //         //console.log("asyncify_start_unwind() [pause wasm]");
++                //         // @ts-ignore
++                //         _exports.asyncify_start_unwind(ASYNCIFY_PTR);
++                //         // How about we pass an Enum back and forth?
++                //         const _exchange = __liftString(exchangeId);
++                //         const _symbol = __liftString(symbol);
++                //         const _timeframe = __liftString(timeframe);
++                //         if (!_exchange || !_symbol || !_timeframe)
++                //             throw new Error("Exchange, Symbol, or Timeframe not provided when fetching OHCLV data.");
++                //         // @ts-ignore
++                //         new ccxt_1.default[_exchange]({
++                //             apiKey: "",
++                //             secret: ""
++                //         }).fetchOHLCV(_symbol, _timeframe, since, limit).then((data) => {
++                //             //console.log("asyncify_stop_unwind() [unpause wasm]");
++                //             // @ts-ignore
++                //             _exports.asyncify_stop_unwind();
++                //             // @ts-ignore: __new is defined
++                //             _ohlcvPtr = __lowerStaticArray((pointer, value) => { __setU32(pointer, __lowerStaticArray(__setF64, 7, 3, value, Float64Array)); }, 8, 2, data);
++                //             //console.log("asyncify_start_rewind() [resuming wasm]");
++                //             // @ts-ignore
++                //             _exports.asyncify_start_rewind(ASYNCIFY_PTR);
++                //             _exports.execute();
++                //         });
++                //     }
++                // }
+             }),
+             console: {
+                 log: (msg) => {
