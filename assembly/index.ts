@@ -79,8 +79,12 @@ export function execute(_prices: string): string {
 }
 
 function formatTick(expandedUpperLimit: number, expandedLowerLimit: number, poolFee: number): Array<number> {
-  const upperTick = closestDivisibleNumber(i32(Math.round(getTickFromPrice(f32(expandedUpperLimit)))), getTickSpacing(i32(poolFee)), false);
-  const lowerTick = closestDivisibleNumber(i32(Math.round(getTickFromPrice(f32(expandedLowerLimit)))), getTickSpacing(i32(poolFee)), true);
+  const poolSpacing = getTickSpacing(i32(poolFee))
+  const upperTick = closestDivisibleNumber(i32(Math.round(getTickFromPrice(f32(expandedUpperLimit)))), poolSpacing, false);
+  const lowerTick = closestDivisibleNumber(i32(Math.round(getTickFromPrice(f32(expandedLowerLimit)))), poolSpacing, true);
+  if (lowerTick == upperTick) {
+    return [upperTick + poolSpacing, lowerTick]
+  }
   return [ upperTick, lowerTick ];
 }
 
