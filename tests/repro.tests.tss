@@ -17,7 +17,7 @@ describe("WASM Module", () => {
   });
 
   describe("Custom Strategy", () => {
-    test("can run execute", async () => {        
+    test.only("can run execute", async () => {        
       const prices3 = [
         {
           timestamp: 1684681200000,
@@ -529,7 +529,8 @@ describe("WASM Module", () => {
         lookback: 72,
         multiplier: 1.1,
         poolFee: 3000,
-        liquidityShape: "Linear"
+        liquidityShape: "Linear",
+        // bins: 4
       }));
       // Here we pin the array to the WASM memory
       // let priceMemoryRef = myModule.__pin(
@@ -541,6 +542,8 @@ describe("WASM Module", () => {
       
       // Pull the result from memory and parse the result
       const parsedResult = JSON.parse(result);
+
+      fs.writeFileSync('result.json', myModule.config())
 
       // The result should match the given config
       expect(JSON.stringify(parsedResult)).toStrictEqual(

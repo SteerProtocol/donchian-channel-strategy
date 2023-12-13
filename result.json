@@ -1,0 +1,519 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Strategy Config",
+  "type": "object",
+  "expectedDataTypes": ["OHLC"],
+  "properties": {
+    "lookback": {
+      "type": "number",
+      "title": "Channel Lookback",
+      "description": "Lookback period for channel",
+      "detailedDescription": "Number of candles to use for the channel",
+      "default": 5
+    },
+    "multiplier": {
+      "type": "number",
+      "title": "Channel Multiplier",
+      "description": "Multiplier for channel width",
+      "detailedDescription": "Example: 5% channel width = 1.05",
+      "default": 1
+    },
+    "poolFee": {
+      "description": "Pool fee percent for desired pool",
+      "title": "Pool Fee",
+      "enum": [
+        10000,
+        3000,
+        500,
+        100
+      ],
+      "enumNames": [
+        "1%",
+        "0.3%",
+        "0.05%",
+        "0.01%"
+      ]
+    },
+    "liquidityShape": {
+      "enum": ["Absolute","Linear","Normalized","Triangle"],
+      "title": "Liquidity Shape",
+      "type": "string",
+      "default": "Linear"
+    }
+  },
+  "allOf": [
+    {
+    "if": {
+      "properties": {
+        "liquidityShape": {
+          "const": "Linear"
+        }
+      }
+    },
+    "then": {
+      "properties": {
+        "bins": {
+          "type": "number",
+          "title": "Positions",
+          "description": "Number of positions to use for strategy",
+          "default": 1
+        }
+      },
+      "required": ["bins"]
+    }
+  },
+  {
+    "if": {
+      "properties": {
+        "liquidityShape": {
+          "const": "Normalized"
+        }
+      }
+    },
+    "then": {
+      "properties": {
+        "bins": {
+          "type": "number",
+          "title": "Positions",
+          "description": "Number of positions to use for strategy",
+          "default": 1
+        },
+        "stdDev": {
+          "type": "number",
+          "title": "Standard Deviation"
+        }
+      },
+      "required": [
+        "bins",
+        "stdDev"
+      ]
+    }
+  },
+  {
+    "if": {
+      "properties": {
+        "liquidityShape": {
+          "const": "ExponentialDecay"
+        }
+      }
+    },
+    "then": {
+      "properties": {
+        "rate": {
+          "type": "number",
+          "title": "Rate",
+          "description": "Rate of decay",
+          "detailedDescription": "The higher the rate, the faster the decay."
+        }
+      },
+      "required": [
+        "rate"
+      ]
+    }
+  },
+  {
+    "if": {
+      "properties": {
+        "liquidityShape": {
+          "const": "Sigmoid"
+        }
+      }
+    },
+    "then": {
+      "properties": {
+        "bins": {
+          "type": "number",
+          "title": "Positions",
+          "description": "Number of positions to use for strategy",
+          "default": 1
+        },
+        "k": {
+          "type": "number",
+          "title": "K"
+        }
+      },
+      "required": [
+        "bins",
+        "k"
+      ]
+    }
+  },
+  {
+    "if": {
+      "properties": {
+        "liquidityShape": {
+          "const": "Logarithmic"
+        }
+      }
+    },
+    "then": {
+      "properties": {
+        "bins": {
+          "type": "number",
+          "title": "Positions",
+          "description": "Number of positions to use for strategy",
+          "default": 1
+        },
+        "base": {
+          "type": "number",
+          "title": "Base"
+        }
+      },
+      "required": [
+        "bins",
+        "base"
+      ]
+    }
+  },
+  {
+    "if": {
+      "properties": {
+        "liquidityShape": {
+          "const": "PowerLaw"
+        }
+      }
+    },
+    "then": {
+      "properties": {
+        "bins": {
+          "type": "number",
+          "title": "Positions",
+          "description": "Number of positions to use for strategy",
+          "default": 1
+        },
+        "exponent": {
+          "type": "number",
+          "title": "Exponent"
+        }
+      },
+      "required": [
+        "bins",
+        "exponent"
+      ]
+    }
+  },
+  {
+    "if": {
+      "properties": {
+        "liquidityShape": {
+          "const": "Step"
+        }
+      }
+    },
+    "then": {
+      "properties": {
+        "bins": {
+          "type": "number",
+          "title": "Positions",
+          "description": "Number of positions to use for strategy",
+          "default": 1
+        },
+        "threshold": {
+          "type": "number",
+          "title": "Threshold"
+        }
+      },
+      "required": [
+        "bins",
+        "threshold"
+      ]
+    }
+  },
+  {
+    "if": {
+      "properties": {
+        "liquidityShape": {
+          "const": "Sine"
+        }
+      }
+    },
+    "then": {
+      "properties": {
+        "bins": {
+          "type": "number",
+          "title": "Positions",
+          "description": "Number of positions to use for strategy",
+          "default": 1
+        },
+        "amplitude": {
+          "type": "number",
+          "title": "Amplitude"
+        },
+        "frequency": {
+          "type": "number",
+          "title": "Frequency"
+        },
+        "phase": {
+          "type": "number",
+          "title": "Phase"
+        }
+      },
+      "required": [
+        "bins",
+        "amplitude",
+        "frequency",
+        "phase"
+      ]
+    }
+  },
+  {
+    "if": {
+      "properties": {
+        "liquidityShape": {
+          "const": "Triangle"
+        }
+      }
+    },
+    "then": {
+      "properties": {
+        "bins": {
+          "type": "number",
+          "title": "Positions",
+          "description": "Number of positions to use for strategy",
+          "default": 1
+        },
+        "amplitude": {
+          "type": "number",
+          "title": "Amplitude"
+        },
+        "period": {
+          "type": "number",
+          "title": "Period"
+        },
+        "phase": {
+          "type": "number",
+          "title": "Phase"
+        }
+      },
+      "required": [
+        "bins",
+        "amplitude",
+        "period",
+        "phase"
+      ]
+    }
+  },
+  {
+    "if": {
+      "properties": {
+        "liquidityShape": {
+          "const": "Quadratic"
+        }
+      }
+    },
+    "then": {
+      "properties": {
+        "bins": {
+          "type": "number",
+          "title": "Positions",
+          "description": "Number of positions to use for strategy",
+          "default": 1
+        },
+        "a": {
+          "type": "number",
+          "title": "A"
+        },
+        "b": {
+          "type": "number",
+          "title": "B"
+        },
+        "c": {
+          "type": "number",
+          "title": "C"
+        }
+      },
+      "required": [
+        "bins",
+        "a",
+        "b",
+        "c"
+      ]
+    }
+  },
+  {
+    "if": {
+      "properties": {
+        "liquidityShape": {
+          "const": "Cubic"
+        }
+      }
+    },
+    "then": {
+      "properties": {
+        "bins": {
+          "type": "number",
+          "title": "Positions",
+          "description": "Number of positions to use for strategy",
+          "default": 1
+        },
+        "a": {
+          "type": "number",
+          "title": "A"
+        },
+        "b": {
+          "type": "number",
+          "title": "B"
+        },
+        "c": {
+          "type": "number",
+          "title": "C"
+        },
+        "d": {
+          "type": "number",
+          "title": "D"
+        }
+      },
+      "required": [
+        "bins",
+        "a",
+        "b",
+        "c",
+        "d"
+      ]
+    }
+  },
+  {
+    "if": {
+      "properties": {
+        "liquidityShape": {
+          "const": "ExponentialGrowth"
+        }
+      }
+    },
+    "then": {
+      "properties": {
+        "bins": {
+          "type": "number",
+          "title": "Positions",
+          "description": "Number of positions to use for strategy",
+          "default": 1
+        },
+        "rate": {
+          "type": "number",
+          "title": "Rate"
+        }
+      },
+      "required": [
+        "bins",
+        "rate"
+      ]
+    }
+  },
+  {
+    "if": {
+      "properties": {
+        "liquidityShape": {
+          "const": "LogarithmicDecay"
+        }
+      }
+    },
+    "then": {
+      "properties": {
+        "bins": {
+          "type": "number",
+          "title": "Positions",
+          "description": "Number of positions to use for strategy",
+          "default": 1
+        },
+        "rate": {
+          "type": "number",
+          "title": "Rate"
+        },
+        "base": {
+          "type": "number",
+          "title": "Base"
+        }
+      },
+      "required": [
+        "bins",
+        "rate",
+        "base"
+      ]
+    }
+  },
+  {
+    "if": {
+      "properties": {
+        "liquidityShape": {
+          "const": "Sawtooth"
+        }
+      }
+    },
+    "then": {
+      "properties": {
+        "bins": {
+          "type": "number",
+          "title": "Positions",
+          "description": "Number of positions to use for strategy",
+          "default": 1
+        },
+        "amplitude": {
+          "type": "number",
+          "title": "Amplitude"
+        },
+        "period": {
+          "type": "number",
+          "title": "Period"
+        },
+        "phase": {
+          "type": "number",
+          "title": "Phase"
+        }
+      },
+      "required": [
+        "bins",
+        "amplitude",
+        "period",
+        "phase"
+      ]
+    }
+  },
+  {
+    "if": {
+      "properties": {
+        "liquidityShape": {
+          "const": "SquareWave"
+        }
+      }
+    },
+    "then": {
+      "properties": {
+        "bins": {
+          "type": "number",
+          "title": "Positions",
+          "description": "Number of positions to use for strategy",
+          "default": 1
+        },
+        "amplitude": {
+          "type": "number",
+          "title": "Amplitude"
+        },
+        "period": {
+          "type": "number",
+          "title": "Period"
+        },
+        "phase": {
+          "type": "number",
+          "title": "Phase"
+        }
+      },
+      "required": [
+        "bins",
+        "amplitude",
+        "period",
+        "phase"
+      ]
+    }
+  },
+  {
+    "required": [
+      "liquidityShape"
+    ]
+  }
+  ],
+  "required": [
+    "lookback",
+    "poolFee",
+    "multiplier"
+  ]
+}

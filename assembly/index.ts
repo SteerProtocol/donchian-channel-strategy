@@ -1,14 +1,15 @@
 import { CurvesConfigHelper, PositionGenerator, stringToPositionStyle, getTickFromPrice, getTickSpacing, renderULMResult, PositionStyle } from "@steerprotocol/concentrated-liquidity-strategy/assembly";
 import { console, Candle, SlidingWindow, parseCandles, Position } from "@steerprotocol/strategy-utils/assembly";
 import { JSON } from "json-as/assembly";
+import { OutlierHelper } from "./Outlier";
 
 @json
 class Config extends CurvesConfigHelper {
   lookback: i32 = 0;                                       // Lookback period for the donchian channel
   multiplier: f32 = 0;                                     // Multiplier for the channel width
-  binSizeMultiplier: f32 = 0;                              // Multiplier for the minimum tick spacing (Creates the position width)
   poolFee: i32 = 0;                                        // Pool fee
-  liquidityShape: string = 'Absolute';                      // Liquidity style
+  liquidityShape: string = 'Absolute';                     // Curve Library: Liquidity style
+  bins: f32 = 0;                                           // Curve Library: Number of total positions to create
 }
 
 // 
@@ -28,7 +29,7 @@ export function initialize(config: string): void {
   }
 
   // Assign values to memory
-  configJson.binSizeMultiplier = f32(configJson.binSizeMultiplier);
+  configJson.bins = f32(configJson.bins);
   configJson.poolFee = i32(configJson.poolFee);
 }
 
@@ -64,13 +65,16 @@ export function execute(_prices: string): string {
   
   const upperTick = formattedTicks[0];
   const lowerTick = formattedTicks[1];
+  
   // Calculate positions
-  const binWidth = i32(f32(getTickSpacing(configJson.poolFee)) * configJson.binSizeMultiplier);
+  const temp = difference(i32(upperTick), i32(lowerTick))
+  const totalDifference = Math.abs(temp)
+  const binWidth = i32(totalDifference/f32(configJson.bins));
+
 
   const positionStyle = stringToPositionStyle(configJson.liquidityShape);
-  
   const positions = PositionGenerator.applyLiquidityShape(upperTick, lowerTick, configJson, binWidth, positionStyle);
-  // const positions: Array<Position> = [new Position(i32(upperTick), i32(lowerTick), 10000)]
+
   // Format and return result
   return renderULMResult(positions, 10000);
 }
@@ -85,11 +89,11 @@ export function donchianChannel(
   prices: Candle[],
   periods: i32
 ): Array<f64> {
-
   if (prices.length < periods) {
     return [0, 0];
   }
 
+  // Setup sliding windows
   const highestHighs = new SlidingWindow<f64>(configJson.lookback, (window) =>
     f64(window.reduce((acc, v) => Math.max(acc, v), -Infinity))
   );
@@ -97,9 +101,22 @@ export function donchianChannel(
     f64(window.reduce((acc, v) => Math.min(acc, v), Infinity))
   );
 
+
+  // Collect highs and lows
+  let highs: f64[] = [];
+  let lows: f64[] = [];
   for (let i = 0; i < prices.length; i++) {
-    highestHighs.addValue(f64(prices[i].high));
-    lowestLows.addValue(f64(prices[i].low));
+    highs.push(f64(prices[i].high));
+    lows.push(f64(prices[i].low));
+  }
+
+  // Adjust outliers in highs and lows
+  const adjustedHighs = OutlierHelper.adjustOutliers(highs);
+  const adjustedLows = OutlierHelper.adjustOutliers(lows);
+
+  for (let i = 0; i < adjustedHighs.length; i++) {
+    highestHighs.addValue(adjustedHighs[i]);
+    lowestLows.addValue(adjustedLows[i]);
   }
 
   const response = highestHighs.isStable() ? [highestHighs.getFormulaResult(), lowestLows.getFormulaResult()] : [0, 0];
@@ -153,22 +170,10 @@ export function config(): string {
       ]
     },
     ${PositionGenerator.propertyHelper([
+        PositionStyle.Basic,
+        PositionStyle.Linear, // We always want linear
         PositionStyle.Normalized,
-        PositionStyle.Absolute,
-        // PositionStyle.Linear, // We always want linear
-        PositionStyle.Sigmoid,
-        PositionStyle.PowerLaw,
-        PositionStyle.Step,
-        // PositionStyle.Sine,
         PositionStyle.Triangle,
-        PositionStyle.Quadratic,
-        PositionStyle.Cubic,
-        // PositionStyle.ExponentialDecay,
-        // PositionStyle.ExponentialGrowth,
-        // PositionStyle.Logarithmic,
-        // PositionStyle.LogarithmicDecay,
-        PositionStyle.Sawtooth,
-        PositionStyle.SquareWave
     ])}
   },
   "allOf": [
@@ -186,3 +191,22 @@ export function version(): i32 {
   return 1;
 }
 
+
+function difference(a: i32, b: i32): i32 {
+  let diff: i32;
+  if (a < 0 && b < 0) {
+    diff = ((a)) - ((b));
+  } else if (a < 0) {
+    diff = ((a)) + b;
+  } else if (b < 0) {
+    diff = a + ((b));
+  } else {
+    diff = a - b;
+  }
+  
+  return abs(diff);
+}
+
+function abs(x: i32): i32 {
+  return x < 0 ? -x : x;
+}
